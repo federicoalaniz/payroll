@@ -43,7 +43,7 @@ import {
     SheetDescription,
     SheetTrigger,
 } from "@/components/ui/sheet";
-
+// modificado
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const { user, logout } = useAuth();
