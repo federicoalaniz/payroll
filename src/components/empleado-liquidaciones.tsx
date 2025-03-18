@@ -28,7 +28,7 @@ export function EmpleadoLiquidaciones({
     empleadoId,
     empleadoNombre,
 }: EmpleadoLiquidacionesProps) {
-    const { liquidaciones, deleteLiquidacion, getLiquidacionesByEmpleado } =
+    const { deleteLiquidacion, getLiquidacionesByEmpleado } =
         useLiquidaciones();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLiquidacion, setSelectedLiquidacion] =
@@ -137,9 +137,11 @@ export function EmpleadoLiquidaciones({
             </CardContent>
 
             <LiquidacionDialog
-                isOpen={isDialogOpen}
-                onClose={handleCloseDialog}
-                liquidacionToEdit={selectedLiquidacion}
+                title={selectedLiquidacion ? "Editar Liquidación" : "Nueva Liquidación"}
+                onSuccess={handleCloseDialog}
+                open={isDialogOpen}
+                onOpenChange={handleCloseDialog}
+                liquidacion={selectedLiquidacion || undefined}
                 empleadoId={empleadoId}
             />
         </Card>

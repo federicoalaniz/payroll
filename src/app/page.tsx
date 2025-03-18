@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/navbar"
 
 export default function Home() {
   const { user } = useAuth()

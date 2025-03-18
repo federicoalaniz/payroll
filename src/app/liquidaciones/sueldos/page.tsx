@@ -17,7 +17,7 @@ import {
     type Empleado,
 } from "@/contexts/PersonasContext";
 import { EmpleadoLiquidaciones } from "@/components/empleado-liquidaciones";
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/navbar";
 
 export default function LiquidacionesSueldosPage() {
     const { empresas, empleados } = usePersonas();
@@ -51,9 +51,9 @@ export default function LiquidacionesSueldosPage() {
                     Liquidación de Sueldos y Jornales
                 </h1>
 
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="flex gap-6 mb-6">
                     {/* Lista de Empresas */}
-                    <Card className="md:col-span-1">
+                    <Card className="w-1/2 flex-grow">
                         <CardHeader>
                             <CardTitle>Empresas</CardTitle>
                         </CardHeader>
@@ -72,15 +72,8 @@ export default function LiquidacionesSueldosPage() {
                                     {empresas.map((empresa) => (
                                         <TableRow
                                             key={empresa.id}
-                                            className={`cursor-pointer ${
-                                                selectedEmpresa?.id ===
-                                                empresa.id
-                                                    ? "bg-muted"
-                                                    : ""
-                                            }`}
-                                            onClick={() =>
-                                                handleSelectEmpresa(empresa)
-                                            }
+                                            className={`cursor-pointer ${selectedEmpresa?.id === empresa.id ? "bg-green-100 dark:bg-green-900/20" : "hover:bg-accent"}`}
+                                            onClick={() => handleSelectEmpresa(empresa)}
                                         >
                                             <TableCell>
                                                 {empresa.nombre}
@@ -97,7 +90,7 @@ export default function LiquidacionesSueldosPage() {
 
                     {/* Lista de Empleados */}
                     {selectedEmpresa && (
-                        <Card className="md:col-span-1">
+                        <Card className="w-1/2 flex-grow">
                             <CardHeader>
                                 <CardTitle>
                                     Empleados de {selectedEmpresa.nombre}
@@ -115,59 +108,36 @@ export default function LiquidacionesSueldosPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {empleadosFiltrados.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={2}
-                                                    className="text-center py-4"
-                                                >
-                                                    No hay empleados registrados
-                                                    para esta empresa
+                                        {empleadosFiltrados.map((empleado) => (
+                                            <TableRow
+                                                key={empleado.id}
+                                                className={`cursor-pointer ${selectedEmpleado?.id === empleado.id ? "bg-green-100 dark:bg-green-900/20" : "hover:bg-accent"}`}
+                                                onClick={() =>
+                                                    handleSelectEmpleado(empleado)
+                                                }
+                                            >
+                                                <TableCell>
+                                                    {empleado.nombre}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {empleado.cuil}
                                                 </TableCell>
                                             </TableRow>
-                                        ) : (
-                                            empleadosFiltrados.map(
-                                                (empleado) => (
-                                                    <TableRow
-                                                        key={empleado.id}
-                                                        className={`cursor-pointer ${
-                                                            selectedEmpleado?.id ===
-                                                            empleado.id
-                                                                ? "bg-muted"
-                                                                : ""
-                                                        }`}
-                                                        onClick={() =>
-                                                            handleSelectEmpleado(
-                                                                empleado
-                                                            )
-                                                        }
-                                                    >
-                                                        <TableCell>
-                                                            {empleado.nombre}
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            {empleado.cuil}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )
-                                            )
-                                        )}
+                                        ))}
                                     </TableBody>
                                 </Table>
                             </CardContent>
                         </Card>
                     )}
-
-                    {/* Liquidaciones del Empleado */}
-                    {selectedEmpleado && (
-                        <Card className="md:col-span-2 lg:col-span-3">
-                            <EmpleadoLiquidaciones
-                                empleadoId={selectedEmpleado.id}
-                                empleadoNombre={selectedEmpleado.nombre}
-                            />
-                        </Card>
-                    )}
                 </div>
+
+                {/* Lista de Liquidaciones */}
+                {selectedEmpleado && (
+                    <EmpleadoLiquidaciones
+                        empleadoId={selectedEmpleado.id}
+                        empleadoNombre={selectedEmpleado.nombre}
+                    />
+                )}
             </div>
         </div>
     );

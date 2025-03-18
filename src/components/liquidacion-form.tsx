@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { usePersonas } from "@/contexts/PersonasContext";
+import { LiquidacionHeader } from "@/components/liquidacion-header";
 import {
     useLiquidaciones,
     type Liquidacion,
@@ -72,7 +73,7 @@ export function LiquidacionForm({
         new Date().toISOString().split("T")[0]
     );
     const [basicSalary, setBasicSalary] = useState("");
-    const [startDate, setStartDate] = useState<string>("");
+
     const [rowsRemunerative, setRowsRemunerative] = useState<SalaryItem[]>([]);
     const [rowsNonRemunerative, setRowsNonRemunerative] = useState<
         NonRemunerativeItem[]
@@ -87,7 +88,7 @@ export function LiquidacionForm({
             setPeriodo(liquidacionToEdit.periodo);
             setFecha(liquidacionToEdit.fecha);
             setBasicSalary(liquidacionToEdit.basicSalary);
-            setStartDate(liquidacionToEdit.startDate);
+
             setRowsRemunerative(liquidacionToEdit.rowsRemunerative);
             setRowsNonRemunerative(liquidacionToEdit.rowsNonRemunerative);
             setDeductionItems(liquidacionToEdit.deductionItems);
@@ -100,14 +101,7 @@ export function LiquidacionForm({
         }
     }, [liquidacionToEdit, empleadoId]);
 
-    useEffect(() => {
-        if (selectedEmpleadoId) {
-            const empleado = empleados.find((e) => e.id === selectedEmpleadoId);
-            if (empleado) {
-                setStartDate(empleado.fechaIngreso);
-            }
-        }
-    }, [selectedEmpleadoId, empleados]);
+
 
     const resetForm = () => {
         if (!empleadoId) {
@@ -116,7 +110,7 @@ export function LiquidacionForm({
         setPeriodo("");
         setFecha(new Date().toISOString().split("T")[0]);
         setBasicSalary("");
-        setStartDate("");
+
         setRowsRemunerative([]);
         setRowsNonRemunerative([]);
         setDeductionItems([]);
@@ -127,7 +121,7 @@ export function LiquidacionForm({
         setRowsRemunerative([
             ...rowsRemunerative,
             {
-                id: Date.now(),
+                id: Date.now().toString(),
                 name: "",
                 percentage: "",
                 amount: "",
@@ -142,31 +136,34 @@ export function LiquidacionForm({
         const newItems: NonRemunerativeItem[] = [
             // Item principal
             {
-                id: newItemId,
+                id: newItemId.toString(),
                 name: "",
                 percentage: "",
                 amount: "",
                 checked: false,
+                isRemunerative: false,
             },
             // Fila de Antigüedad
             {
-                id: newItemId + 2,
+                id: (newItemId + 2).toString(),
                 name: `Antigüedad 1% - ${years} años`,
                 percentage: "1", // Siempre es 1% (el multiplicador por años se aplica en el cálculo)
                 amount: "",
                 checked: true,
                 isSeniorityRow: true,
-                referenceItemId: newItemId,
+                referenceItemId: newItemId.toString(),
+                isRemunerative: false,
             },
             // Fila de Presentismo
             {
-                id: newItemId + 1,
+                id: (newItemId + 1).toString(),
                 name: "Presentismo",
                 percentage: presentismoPercentage,
                 amount: "",
                 checked: true,
                 isAttendanceRow: true,
-                referenceItemId: newItemId,
+                referenceItemId: newItemId.toString(),
+                isRemunerative: false,
             },
         ];
         setRowsNonRemunerative([...rowsNonRemunerative, ...newItems]);
@@ -176,7 +173,7 @@ export function LiquidacionForm({
         setDeductionItems([
             ...deductionItems,
             {
-                id: Date.now(),
+                id: Date.now().toString(),
                 name: "",
                 percentage: "",
                 amount: "",
@@ -190,20 +187,20 @@ export function LiquidacionForm({
     };
 
     const removeRemunerativeItem = (id: number) => {
-        setRowsRemunerative(rowsRemunerative.filter((row) => row.id !== id));
+        setRowsRemunerative(rowsRemunerative.filter((row) => row.id !== id.toString()));
     };
 
     const removeNonRemunerativeItem = (id: number) => {
         // Eliminar el item principal y sus filas relacionadas
         setRowsNonRemunerative(
             rowsNonRemunerative.filter(
-                (row) => row.id !== id && row.referenceItemId !== id
+                (row) => row.id !== id.toString() && row.referenceItemId !== id.toString()
             )
         );
     };
 
     const removeDeductionItem = (id: number) => {
-        setDeductionItems(deductionItems.filter((item) => item.id !== id));
+        setDeductionItems(deductionItems.filter((item) => item.id !== id.toString()));
     };
 
     const handleBasicSalaryChange = (
@@ -219,14 +216,14 @@ export function LiquidacionForm({
         value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
         setRowsRemunerative(
             rowsRemunerative.map((row) =>
-                row.id === id
+                row.id === id.toString()
                     ? {
-                          ...row,
-                          percentage: value,
-                          amount: row.checked
-                              ? calculateAmount(value, basicSalary)
-                              : row.amount,
-                      }
+                        ...row,
+                        percentage: value,
+                        amount: row.checked
+                            ? calculateAmount(value, basicSalary)
+                            : row.amount,
+                    }
                     : row
             )
         );
@@ -239,11 +236,11 @@ export function LiquidacionForm({
         value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
         setRowsNonRemunerative(
             rowsNonRemunerative.map((row) => {
-                if (row.id === id) {
+                if (row.id === id.toString()) {
                     const referenceItem = row.referenceItemId
                         ? rowsNonRemunerative.find(
-                              (r) => r.id === row.referenceItemId
-                          )
+                            (r) => r.id === row.referenceItemId
+                        )
                         : null;
                     return {
                         ...row,
@@ -262,7 +259,7 @@ export function LiquidacionForm({
         value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
         setRowsRemunerative(
             rowsRemunerative.map((row) =>
-                row.id === id ? { ...row, amount: value } : row
+                row.id === id.toString() ? { ...row, amount: value } : row
             )
         );
     };
@@ -272,11 +269,11 @@ export function LiquidacionForm({
 
         // Primera pasada: calcular el monto de antigüedad
         const tempRows = rowsNonRemunerative.map((row) => {
-            if (row.id === id) {
+            if (row.id === id.toString()) {
                 return { ...row, amount: value };
             }
 
-            if (row.referenceItemId === id && row.isSeniorityRow) {
+            if (row.referenceItemId === id.toString() && row.isSeniorityRow) {
                 const years = calculateYearsOfService();
                 const baseAmount =
                     Number.parseFloat(
@@ -295,7 +292,7 @@ export function LiquidacionForm({
 
         // Segunda pasada: calcular el monto de attendance con el seniority actualizado
         const updatedItems = tempRows.map((row) => {
-            if (row.referenceItemId === id && row.isAttendanceRow) {
+            if (row.referenceItemId === id.toString() && row.isAttendanceRow) {
                 const baseAmount =
                     Number.parseFloat(
                         value.replace(/\./g, "").replace(",", ".")
@@ -303,15 +300,15 @@ export function LiquidacionForm({
 
                 // Buscar el seniority actualizado en tempRows en lugar del estado original
                 const seniorityRow = tempRows.find(
-                    (r) => r.referenceItemId === id && r.isSeniorityRow
+                    (r) => r.referenceItemId === id.toString() && r.isSeniorityRow
                 );
 
                 const seniorityAmount = seniorityRow?.amount
                     ? Number.parseFloat(
-                          seniorityRow.amount
-                              .replace(/\./g, "")
-                              .replace(",", ".")
-                      ) || 0
+                        seniorityRow.amount
+                            .replace(/\./g, "")
+                            .replace(",", ".")
+                    ) || 0
                     : 0;
 
                 const total = baseAmount + seniorityAmount;
@@ -339,14 +336,14 @@ export function LiquidacionForm({
     const handleCheckboxChange = (id: number, checked: boolean) => {
         setRowsRemunerative(
             rowsRemunerative.map((row) =>
-                row.id === id
+                row.id === id.toString()
                     ? {
-                          ...row,
-                          checked,
-                          amount: checked
-                              ? calculateAmount(row.percentage, basicSalary)
-                              : row.amount,
-                      }
+                        ...row,
+                        checked,
+                        amount: checked
+                            ? calculateAmount(row.percentage, basicSalary)
+                            : row.amount,
+                    }
                     : row
             )
         );
@@ -392,8 +389,8 @@ export function LiquidacionForm({
     };
 
     const calculateYearsOfService = () => {
-        if (!startDate) return 0;
-        const start = new Date(startDate);
+        if (!empleadoSeleccionado?.fechaIngreso) return 0;
+        const start = new Date(empleadoSeleccionado.fechaIngreso);
         const today = new Date();
         const diffTime = Math.abs(today.getTime() - start.getTime());
         const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
@@ -401,7 +398,7 @@ export function LiquidacionForm({
     };
 
     const calculateSeniorityAmount = () => {
-        if (!basicSalary || !startDate) return "";
+        if (!basicSalary || !empleadoSeleccionado?.fechaIngreso) return "";
 
         const salary = Number.parseFloat(
             basicSalary.replace(/\./g, "").replace(",", ".")
@@ -418,7 +415,7 @@ export function LiquidacionForm({
         const formattedValue = formatNumber(value);
         setRowsRemunerative(
             rowsRemunerative.map((row) =>
-                row.id === id ? { ...row, amount: formattedValue } : row
+                row.id === id.toString() ? { ...row, amount: formattedValue } : row
             )
         );
     };
@@ -427,7 +424,7 @@ export function LiquidacionForm({
         const formattedValue = formatNumber(value);
         setRowsNonRemunerative(
             rowsNonRemunerative.map((row) =>
-                row.id === id ? { ...row, amount: formattedValue } : row
+                row.id === id.toString() ? { ...row, amount: formattedValue } : row
             )
         );
     };
@@ -554,7 +551,7 @@ export function LiquidacionForm({
             fecha,
             periodo,
             basicSalary,
-            startDate,
+
             presentismoPercentage,
             rowsRemunerative,
             rowsNonRemunerative,
@@ -568,10 +565,15 @@ export function LiquidacionForm({
         if (liquidacionToEdit) {
             updateLiquidacion({
                 ...liquidacionData,
+                startDate: liquidacionToEdit.startDate, // Preserve the required startDate field from original liquidacion
                 id: liquidacionToEdit.id,
             });
         } else {
-            addLiquidacion(liquidacionData);
+            addLiquidacion({
+                ...liquidacionData,
+                id: Date.now().toString(), // Generate a unique ID
+                startDate: new Date().toISOString(), // Set current date as startDate
+            });
         }
 
         setIsSubmitting(false);
@@ -586,16 +588,11 @@ export function LiquidacionForm({
 
     return (
         <div className="space-y-6">
+            {selectedEmpleadoId && (
+                <LiquidacionHeader empleadoId={selectedEmpleadoId} />
+            )}
             {/* Datos básicos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="space-y-2">
-                    <Label htmlFor="empleado">Empleado</Label>
-                    <div className="font-medium">
-                        {empleadoSeleccionado
-                            ? empleadoSeleccionado.nombre
-                            : "No seleccionado"}
-                    </div>
-                </div>
                 <div className="space-y-2">
                     <Label htmlFor="periodo">Período</Label>
                     <Input
@@ -645,22 +642,7 @@ export function LiquidacionForm({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        <TableRow>
-                            <TableCell>Fecha de ingreso</TableCell>
-                            <TableCell>
-                                <Input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) =>
-                                        setStartDate(e.target.value)
-                                    }
-                                    className="text-end"
-                                />
-                            </TableCell>
-                            <TableCell></TableCell>
-                            <TableCell></TableCell>
-                            <TableCell></TableCell>
-                        </TableRow>
+
                         <TableRow>
                             <TableCell>Sueldo básico</TableCell>
                             <TableCell>
@@ -743,10 +725,10 @@ export function LiquidacionForm({
                                                 rowsRemunerative.map((r) =>
                                                     r.id === row.id
                                                         ? {
-                                                              ...r,
-                                                              name: e.target
-                                                                  .value,
-                                                          }
+                                                            ...r,
+                                                            name: e.target
+                                                                .value,
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -759,14 +741,14 @@ export function LiquidacionForm({
                                         onChange={(e) =>
                                             !row.checked &&
                                             handleAmountChange(
-                                                row.id,
+                                                Number(row.id),
                                                 e.target.value
                                             )
                                         }
                                         readOnly={row.checked}
                                         onBlur={(e) =>
                                             handleAmountBlur(
-                                                row.id,
+                                                Number(row.id),
                                                 e.target.value
                                             )
                                         }
@@ -778,7 +760,7 @@ export function LiquidacionForm({
                                         checked={row.checked}
                                         onCheckedChange={(checked) =>
                                             handleCheckboxChange(
-                                                row.id,
+                                                Number(row.id),
                                                 checked as boolean
                                             )
                                         }
@@ -789,7 +771,7 @@ export function LiquidacionForm({
                                         value={row.percentage}
                                         onChange={(e) =>
                                             handlePercentageChange(
-                                                row.id,
+                                                Number(row.id),
                                                 e.target.value
                                             )
                                         }
@@ -801,7 +783,7 @@ export function LiquidacionForm({
                                         variant="ghost"
                                         size="icon"
                                         onClick={() =>
-                                            removeRemunerativeItem(row.id)
+                                            removeRemunerativeItem(Number(row.id))
                                         }
                                         className="text-red-500 hover:text-red-700"
                                     >
@@ -872,10 +854,10 @@ export function LiquidacionForm({
                                                 rowsNonRemunerative.map((r) =>
                                                     r.id === row.id
                                                         ? {
-                                                              ...r,
-                                                              name: e.target
-                                                                  .value,
-                                                          }
+                                                            ...r,
+                                                            name: e.target
+                                                                .value,
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -891,13 +873,13 @@ export function LiquidacionForm({
                                         value={row.amount}
                                         onChange={(e) =>
                                             handleNonRemunerativeAmountChange(
-                                                row.id,
+                                                Number(row.id),
                                                 e.target.value
                                             )
                                         }
                                         onBlur={(e) =>
                                             handleNonRemunerativeAmountBlur(
-                                                row.id,
+                                                Number(row.id),
                                                 e.target.value
                                             )
                                         }
@@ -913,7 +895,7 @@ export function LiquidacionForm({
                                         value={row.percentage}
                                         onChange={(e) =>
                                             handleNonRemunerativePercentageChange(
-                                                row.id,
+                                                Number(row.id),
                                                 e.target.value
                                             )
                                         }
@@ -931,7 +913,7 @@ export function LiquidacionForm({
                                                 size="icon"
                                                 onClick={() =>
                                                     removeNonRemunerativeItem(
-                                                        row.id
+                                                        Number(row.id)
                                                     )
                                                 }
                                                 className="text-red-500 hover:text-red-700"
@@ -1000,10 +982,10 @@ export function LiquidacionForm({
                                                 deductionItems.map((r) =>
                                                     r.id === item.id
                                                         ? {
-                                                              ...r,
-                                                              name: e.target
-                                                                  .value,
-                                                          }
+                                                            ...r,
+                                                            name: e.target
+                                                                .value,
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -1015,34 +997,34 @@ export function LiquidacionForm({
                                         value={
                                             item.checkedRemunerative
                                                 ? formatNumber(
-                                                      (
-                                                          (Number.parseFloat(
-                                                              calculateTotalRemunerative()
-                                                                  .replace(
-                                                                      /\./g,
-                                                                      ""
-                                                                  )
-                                                                  .replace(
-                                                                      ",",
-                                                                      "."
-                                                                  )
+                                                    (
+                                                        (Number.parseFloat(
+                                                            calculateTotalRemunerative()
+                                                                .replace(
+                                                                    /\./g,
+                                                                    ""
+                                                                )
+                                                                .replace(
+                                                                    ",",
+                                                                    "."
+                                                                )
                                                           ) *
-                                                              Number.parseFloat(
-                                                                  item.percentage
-                                                                      .replace(
-                                                                          /\./g,
-                                                                          ""
-                                                                      )
-                                                                      .replace(
-                                                                          ",",
-                                                                          "."
-                                                                      )
-                                                              )) /
-                                                          100
-                                                      )
-                                                          .toFixed(2)
-                                                          .replace(".", ",")
-                                                  )
+                                                            Number.parseFloat(
+                                                                item.percentage
+                                                                    .replace(
+                                                                        /\./g,
+                                                                        ""
+                                                                    )
+                                                                    .replace(
+                                                                        ",",
+                                                                        "."
+                                                                    )
+                                                            )) /
+                                                        100
+                                                    )
+                                                        .toFixed(2)
+                                                        .replace(".", ",")
+                                                )
                                                 : item.remunerativeAmount
                                         }
                                         onChange={(e) =>
@@ -1050,11 +1032,11 @@ export function LiquidacionForm({
                                                 deductionItems.map((r) =>
                                                     r.id === item.id
                                                         ? {
-                                                              ...r,
-                                                              remunerativeAmount:
-                                                                  e.target
-                                                                      .value,
-                                                          }
+                                                            ...r,
+                                                            remunerativeAmount:
+                                                                e.target
+                                                                    .value,
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -1064,13 +1046,13 @@ export function LiquidacionForm({
                                                 deductionItems.map((r) =>
                                                     r.id === item.id
                                                         ? {
-                                                              ...r,
-                                                              remunerativeAmount:
-                                                                  formatNumber(
-                                                                      e.target
-                                                                          .value
-                                                                  ),
-                                                          }
+                                                            ...r,
+                                                            remunerativeAmount:
+                                                                formatNumber(
+                                                                    e.target
+                                                                        .value
+                                                                ),
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -1084,34 +1066,34 @@ export function LiquidacionForm({
                                         value={
                                             item.checkedNonRemunerative
                                                 ? formatNumber(
-                                                      (
-                                                          (Number.parseFloat(
-                                                              calculateTotalNonRemunerative()
-                                                                  .replace(
-                                                                      /\./g,
-                                                                      ""
-                                                                  )
-                                                                  .replace(
-                                                                      ",",
-                                                                      "."
-                                                                  )
+                                                    (
+                                                        (Number.parseFloat(
+                                                            calculateTotalNonRemunerative()
+                                                                .replace(
+                                                                    /\./g,
+                                                                    ""
+                                                                )
+                                                                .replace(
+                                                                    ",",
+                                                                    "."
+                                                                )
                                                           ) *
-                                                              Number.parseFloat(
-                                                                  item.percentage
-                                                                      .replace(
-                                                                          /\./g,
-                                                                          ""
-                                                                      )
-                                                                      .replace(
-                                                                          ",",
-                                                                          "."
-                                                                      )
-                                                              )) /
-                                                          100
-                                                      )
-                                                          .toFixed(2)
-                                                          .replace(".", ",")
-                                                  )
+                                                            Number.parseFloat(
+                                                                item.percentage
+                                                                    .replace(
+                                                                        /\./g,
+                                                                        ""
+                                                                    )
+                                                                    .replace(
+                                                                        ",",
+                                                                        "."
+                                                                    )
+                                                            )) /
+                                                        100
+                                                    )
+                                                        .toFixed(2)
+                                                        .replace(".", ",")
+                                                )
                                                 : item.nonRemunerativeAmount
                                         }
                                         onChange={(e) =>
@@ -1119,11 +1101,11 @@ export function LiquidacionForm({
                                                 deductionItems.map((r) =>
                                                     r.id === item.id
                                                         ? {
-                                                              ...r,
-                                                              nonRemunerativeAmount:
-                                                                  e.target
-                                                                      .value,
-                                                          }
+                                                            ...r,
+                                                            nonRemunerativeAmount:
+                                                                e.target
+                                                                    .value,
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -1133,13 +1115,13 @@ export function LiquidacionForm({
                                                 deductionItems.map((r) =>
                                                     r.id === item.id
                                                         ? {
-                                                              ...r,
-                                                              nonRemunerativeAmount:
-                                                                  formatNumber(
-                                                                      e.target
-                                                                          .value
-                                                                  ),
-                                                          }
+                                                            ...r,
+                                                            nonRemunerativeAmount:
+                                                                formatNumber(
+                                                                    e.target
+                                                                        .value
+                                                                ),
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -1162,10 +1144,10 @@ export function LiquidacionForm({
                                                             (r) =>
                                                                 r.id === item.id
                                                                     ? {
-                                                                          ...r,
-                                                                          checkedRemunerative:
-                                                                              checked as boolean,
-                                                                      }
+                                                                        ...r,
+                                                                        checkedRemunerative:
+                                                                            checked as boolean,
+                                                                    }
                                                                     : r
                                                         )
                                                     )
@@ -1184,10 +1166,10 @@ export function LiquidacionForm({
                                                             (r) =>
                                                                 r.id === item.id
                                                                     ? {
-                                                                          ...r,
-                                                                          checkedNonRemunerative:
-                                                                              checked as boolean,
-                                                                      }
+                                                                        ...r,
+                                                                        checkedNonRemunerative:
+                                                                            checked as boolean,
+                                                                    }
                                                                     : r
                                                         )
                                                     )
@@ -1204,11 +1186,11 @@ export function LiquidacionForm({
                                                 deductionItems.map((r) =>
                                                     r.id === item.id
                                                         ? {
-                                                              ...r,
-                                                              percentage:
-                                                                  e.target
-                                                                      .value,
-                                                          }
+                                                            ...r,
+                                                            percentage:
+                                                                e.target
+                                                                    .value,
+                                                        }
                                                         : r
                                                 )
                                             )
@@ -1224,7 +1206,7 @@ export function LiquidacionForm({
                                         variant="ghost"
                                         size="icon"
                                         onClick={() =>
-                                            removeDeductionItem(item.id)
+                                            removeDeductionItem(Number(item.id))
                                         }
                                         className="text-red-500 hover:text-red-700"
                                     >

@@ -29,7 +29,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setUser(parsedUser);
+            } catch {
+                console.error("Invalid user data in localStorage");
+                localStorage.removeItem("user"); // Clear invalid data
+            }
         }
     }, []);
 
@@ -38,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             (u) => u.userId === userId && u.password === password
         );
         if (foundUser) {
-            const { password, ...userWithoutPassword } = foundUser;
+            const {  ...userWithoutPassword } = foundUser;
             setUser(userWithoutPassword);
             localStorage.setItem("user", JSON.stringify(userWithoutPassword));
             return true;

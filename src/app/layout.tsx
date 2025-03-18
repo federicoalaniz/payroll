@@ -2,7 +2,10 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { Toaster } from "sonner"
+import { LiquidacionesProvider } from "@/contexts/LiquidacionesContext"
 import { Providers } from "@/components/providers"
+import { PopulateSampleData } from "@/scripts/populate-sample-data"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,9 +22,14 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <LiquidacionesProvider>
+            {children}
+            <PopulateSampleData />
+            <Toaster richColors position="top-right" />
+          </LiquidacionesProvider>
+        </Providers>
       </body>
     </html>
   )
 }
-

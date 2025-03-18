@@ -1,44 +1,62 @@
 "use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { LiquidacionForm } from "@/components/liquidacion-form";
-import type { Liquidacion } from "@/contexts/LiquidacionesContext";
+import { Liquidacion } from "@/contexts/LiquidacionesContext";
 
 interface LiquidacionDialogProps {
-    isOpen: boolean;
-    onClose: () => void;
-    liquidacionToEdit: Liquidacion | null;
-    empleadoId: string;
+    title: string;
+    empleadoId?: string;
+    liquidacion?: Liquidacion;
+    onSuccess: () => void;
+    trigger?: React.ReactNode;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 export function LiquidacionDialog({
-    isOpen,
-    onClose,
-    liquidacionToEdit,
+    title,
     empleadoId,
+    liquidacion,
+    onSuccess,
+    trigger,
+    open: controlledOpen,
+    onOpenChange: controlledOnOpenChange,
 }: LiquidacionDialogProps) {
-    const handleSubmitSuccess = () => {
-        onClose();
+    const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+    const open = controlledOpen ?? uncontrolledOpen;
+    const setOpen = controlledOnOpenChange ?? setUncontrolledOpen;
+
+    const handleSuccess = () => {
+        setOpen(false);
+        onSuccess();
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                {trigger || (
+                    <Button variant="outline" size="sm">
+                        Nueva Liquidación
+                    </Button>
+                )}
+            </DialogTrigger>
+            <DialogContent className="max-w-[95vw] min-w-[70vw] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>
-                        {liquidacionToEdit
-                            ? "Editar Liquidación"
-                            : "Nueva Liquidación"}
-                    </DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
                 <LiquidacionForm
-                    liquidacionToEdit={liquidacionToEdit}
-                    onSubmitSuccess={handleSubmitSuccess}
                     empleadoId={empleadoId}
+                    liquidacionToEdit={liquidacion}
+                    onSubmitSuccess={handleSuccess}
                 />
             </DialogContent>
         </Dialog>

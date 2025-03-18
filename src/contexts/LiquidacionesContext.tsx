@@ -5,28 +5,29 @@ import { createContext, useState, useContext } from "react";
 import { usePersonas } from "./PersonasContext";
 import { toast } from "sonner";
 
-export type SalaryItem = {
-    id: number;
+export interface SalaryItem {
+    id: string;
     name: string;
     percentage: string;
     amount: string;
     checked: boolean;
-};
-
-export type NonRemunerativeItem = SalaryItem & {
     isAttendanceRow?: boolean;
     isSeniorityRow?: boolean;
-    referenceItemId?: number;
-};
+    referenceItemId?: string;
+}
 
-export type DeductionItem = SalaryItem & {
-    remunerativeAmount: string;
-    nonRemunerativeAmount: string;
+export interface NonRemunerativeItem extends SalaryItem {
+    isRemunerative: false;
+}
+
+export interface DeductionItem extends SalaryItem {
     checkedRemunerative: boolean;
     checkedNonRemunerative: boolean;
-};
+    remunerativeAmount: string;
+    nonRemunerativeAmount: string;
+}
 
-export type Liquidacion = {
+export interface Liquidacion {
     id: string;
     empleadoId: string;
     fecha: string;
@@ -41,41 +42,97 @@ export type Liquidacion = {
     totalNoRemunerativo: string;
     totalDeducciones: string;
     totalNeto: string;
-};
+}
 
-type LiquidacionesContextType = {
+interface LiquidacionesContextType {
     liquidaciones: Liquidacion[];
-    addLiquidacion: (liquidacion: Omit<Liquidacion, "id">) => void;
+    setLiquidaciones: (liquidaciones: Liquidacion[]) => void;
+    addLiquidacion: (liquidacion: Liquidacion) => void;
     updateLiquidacion: (liquidacion: Liquidacion) => void;
     deleteLiquidacion: (id: string) => void;
     getLiquidacionesByEmpleado: (empleadoId: string) => Liquidacion[];
-};
+}
 
-const LiquidacionesContext = createContext<
-    LiquidacionesContextType | undefined
->(undefined);
+export const LiquidacionesContext = createContext<LiquidacionesContextType>({
+    liquidaciones: [],
+    setLiquidaciones: () => {},
+    addLiquidacion: () => {},
+    updateLiquidacion: () => {},
+    deleteLiquidacion: () => {},
+    getLiquidacionesByEmpleado: () => [],
+});
+
+// Deducciones por defecto según la memoria del sistema
+export const defaultDeductions: DeductionItem[] = [
+    {
+        id: "1",
+        name: "Jubilación",
+        percentage: "11",
+        amount: "",
+        checked: false,
+        checkedRemunerative: true,
+        checkedNonRemunerative: false,
+        remunerativeAmount: "",
+        nonRemunerativeAmount: "",
+    },
+    {
+        id: "2",
+        name: "INSSJP",
+        percentage: "3",
+        amount: "",
+        checked: false,
+        checkedRemunerative: true,
+        checkedNonRemunerative: false,
+        remunerativeAmount: "",
+        nonRemunerativeAmount: "",
+    },
+    {
+        id: "3",
+        name: "Aporte Sindical",
+        percentage: "2",
+        amount: "",
+        checked: false,
+        checkedRemunerative: true,
+        checkedNonRemunerative: true,
+        remunerativeAmount: "",
+        nonRemunerativeAmount: "",
+    },
+    {
+        id: "4",
+        name: "Obra Social",
+        percentage: "6",
+        amount: "",
+        checked: false,
+        checkedRemunerative: true,
+        checkedNonRemunerative: true,
+        remunerativeAmount: "",
+        nonRemunerativeAmount: "",
+    },
+];
 
 export const LiquidacionesProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
     const [liquidaciones, setLiquidaciones] = useState<Liquidacion[]>([]);
-    const { empleados } = usePersonas();
+    const { } = usePersonas();
 
-    const addLiquidacion = (liquidacion: Omit<Liquidacion, "id">) => {
-        const newLiquidacion = { ...liquidacion, id: Date.now().toString() };
+    const addLiquidacion = (liquidacion: Liquidacion) => {
+        // Asegurarse de que la liquidación tenga las deducciones por defecto
+        const newLiquidacion = {
+            ...liquidacion,
+            deductionItems: liquidacion.deductionItems.length > 0
+                ? liquidacion.deductionItems
+                : defaultDeductions,
+        };
         setLiquidaciones([...liquidaciones, newLiquidacion]);
         toast.success("Liquidación guardada", {
             description: "La liquidación se ha guardado correctamente.",
         });
     };
 
-    const updateLiquidacion = (updatedLiquidacion: Liquidacion) => {
+    const updateLiquidacion = (liquidacion: Liquidacion) => {
         setLiquidaciones(
-            liquidaciones.map((liquidacion) =>
-                liquidacion.id === updatedLiquidacion.id
-                    ? updatedLiquidacion
-                    : liquidacion
-            )
+            liquidaciones.map((l) => (l.id === liquidacion.id ? liquidacion : l))
         );
         toast.success("Liquidación actualizada", {
             description: "La liquidación se ha actualizado correctamente.",
@@ -83,9 +140,7 @@ export const LiquidacionesProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const deleteLiquidacion = (id: string) => {
-        setLiquidaciones(
-            liquidaciones.filter((liquidacion) => liquidacion.id !== id)
-        );
+        setLiquidaciones(liquidaciones.filter((l) => l.id !== id));
         toast.success("Liquidación eliminada", {
             description: "La liquidación se ha eliminado correctamente.",
         });
@@ -101,6 +156,7 @@ export const LiquidacionesProvider: React.FC<{ children: React.ReactNode }> = ({
         <LiquidacionesContext.Provider
             value={{
                 liquidaciones,
+                setLiquidaciones,
                 addLiquidacion,
                 updateLiquidacion,
                 deleteLiquidacion,
@@ -114,7 +170,7 @@ export const LiquidacionesProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useLiquidaciones = () => {
     const context = useContext(LiquidacionesContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error(
             "useLiquidaciones must be used within a LiquidacionesProvider"
         );

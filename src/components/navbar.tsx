@@ -79,7 +79,7 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="sticky top-0 z-50 border-b bg-background">
+        <nav className="sticky top-0 z-50 border-b">
             <div className="flex h-16 items-center px-4 md:px-6">
                 {/* Logo */}
                 <div className="flex items-center gap-2 font-semibold">
@@ -127,7 +127,7 @@ export default function Navbar() {
                         <div className="grid gap-4 py-4">
                             <Link
                                 href="/personas"
-                                className="flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent"
+                                className="mobile-menu-item flex items-center gap-2 rounded-md px-3 py-2 text-sm"
                                 onClick={() => setIsOpen(false)}
                             >
                                 <Users className="h-4 w-4" />
@@ -141,28 +141,28 @@ export default function Navbar() {
                                 <div className="ml-6 grid gap-1">
                                     <Link
                                         href="/liquidaciones/sueldos"
-                                        className="rounded-md px-3 py-1 text-sm hover:bg-accent"
+                                        className="mobile-menu-item rounded-md px-3 py-1 text-sm"
                                         onClick={() => setIsOpen(false)}
                                     >
                                         Sueldos y jornales
                                     </Link>
                                     <Link
                                         href="/liquidaciones/sac"
-                                        className="rounded-md px-3 py-1 text-sm hover:bg-accent"
+                                        className="mobile-menu-item rounded-md px-3 py-1 text-sm"
                                         onClick={() => setIsOpen(false)}
                                     >
                                         Sueldo anual complementario
                                     </Link>
                                     <Link
                                         href="/liquidaciones/vacaciones"
-                                        className="rounded-md px-3 py-1 text-sm hover:bg-accent"
+                                        className="mobile-menu-item rounded-md px-3 py-1 text-sm"
                                         onClick={() => setIsOpen(false)}
                                     >
                                         Vacaciones
                                     </Link>
                                     <Link
                                         href="/liquidaciones/final"
-                                        className="rounded-md px-3 py-1 text-sm hover:bg-accent"
+                                        className="mobile-menu-item rounded-md px-3 py-1 text-sm"
                                         onClick={() => setIsOpen(false)}
                                     >
                                         Liquidación final
@@ -205,10 +205,10 @@ export default function Navbar() {
                 {/* Desktop Menu */}
                 <Menubar className="ml-4 hidden border-none md:flex">
                     <MenubarMenu>
-                        <MenubarTrigger className="font-medium">
+                        <MenubarTrigger className="menubar-trigger font-medium">
                             <Link
                                 href="/personas"
-                                className="flex items-center gap-1"
+                                className="nav-link flex items-center gap-1"
                             >
                                 <Users className="h-4 w-4" />
                                 Personas
@@ -226,7 +226,7 @@ export default function Navbar() {
                             <MenubarItem>
                                 <Link
                                     href="/liquidaciones/sueldos"
-                                    className="flex w-full"
+                                    className="nav-link flex w-full"
                                 >
                                     Sueldos y jornales
                                 </Link>
@@ -234,7 +234,7 @@ export default function Navbar() {
                             <MenubarItem>
                                 <Link
                                     href="/liquidaciones/sac"
-                                    className="flex w-full"
+                                    className="nav-link flex w-full"
                                 >
                                     Sueldo anual complementario
                                 </Link>
@@ -243,7 +243,7 @@ export default function Navbar() {
                             <MenubarItem>
                                 <Link
                                     href="/liquidaciones/vacaciones"
-                                    className="flex w-full"
+                                    className="nav-link flex w-full"
                                 >
                                     Vacaciones
                                 </Link>
@@ -296,7 +296,7 @@ export default function Navbar() {
 
                     {/* Opciones genéricas para futuro */}
                     <MenubarMenu>
-                        <MenubarTrigger className="font-medium">
+                        <MenubarTrigger className="menubar-trigger font-medium">
                             Configuración
                         </MenubarTrigger>
                         <MenubarContent>

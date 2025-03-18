@@ -26,16 +26,15 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">
-            <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-10 shadow-md dark:bg-gray-800">
+        <div className="flex min-h-screen items-center justify-center">
+            <div className="w-full max-w-md space-y-6">
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
-                        Iniciar sesión
-                    </h2>
+                    <h2 className="text-3xl font-bold tracking-tight">Iniciar sesión</h2>
+                    <p className="text-sm text-muted-foreground mt-2">Ingresa tus credenciales para acceder al sistema</p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="space-y-4 rounded-md shadow-sm">
-                        <div>
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
                             <Label htmlFor="userId">Usuario</Label>
                             <Input
                                 id="userId"
@@ -44,11 +43,10 @@ export default function LoginPage() {
                                 required
                                 value={userId}
                                 onChange={(e) => setUserId(e.target.value)}
-                                className="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 sm:text-sm"
                                 placeholder="Usuario"
                             />
                         </div>
-                        <div>
+                        <div className="space-y-2">
                             <Label htmlFor="password">Contraseña</Label>
                             <Input
                                 id="password"
@@ -57,26 +55,20 @@ export default function LoginPage() {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 sm:text-sm"
                                 placeholder="Contraseña"
                             />
                         </div>
                     </div>
 
                     {error && (
-                        <p className="text-center text-sm text-red-600">
+                        <p className="text-sm text-destructive text-center">
                             {error}
                         </p>
                     )}
 
-                    <div>
-                        <Button
-                            type="submit"
-                            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Iniciar sesión
-                        </Button>
-                    </div>
+                    <Button type="submit" className="w-full">
+                        Iniciar sesión
+                    </Button>
                 </form>
             </div>
         </div>
