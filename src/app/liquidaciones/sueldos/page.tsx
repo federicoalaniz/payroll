@@ -17,7 +17,7 @@ import {
     type Empleado,
 } from "@/contexts/PersonasContext";
 import { EmpleadoLiquidaciones } from "@/components/empleado-liquidaciones";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/navigationbar";
 
 export default function LiquidacionesSueldosPage() {
     const { empresas, empleados } = usePersonas();
