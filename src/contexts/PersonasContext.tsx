@@ -66,33 +66,60 @@ export const PersonasContext = createContext<PersonasContextType>({
 });
 
 export function PersonasProvider({ children }: { children: React.ReactNode }) {
-    const [empleados, setEmpleados] = useState<Empleado[]>([]);
-    const [empresas, setEmpresas] = useState<Empresa[]>([]);
+    const [empleados, setEmpleadosState] = useState<Empleado[]>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('empleados');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return [];
+    });
+
+    const [empresas, setEmpresasState] = useState<Empresa[]>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('empresas');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return [];
+    });
+
+    const setEmpleados = (newEmpleados: Empleado[]) => {
+        setEmpleadosState(newEmpleados);
+        localStorage.setItem('empleados', JSON.stringify(newEmpleados));
+    };
+
+    const setEmpresas = (newEmpresas: Empresa[]) => {
+        setEmpresasState(newEmpresas);
+        localStorage.setItem('empresas', JSON.stringify(newEmpresas));
+    };
 
     const addEmpleado = (empleado: Empleado) => {
-        setEmpleados([...empleados, empleado]);
+        const newEmpleados = [...empleados, empleado];
+        setEmpleados(newEmpleados);
     };
 
     const addEmpresa = (empresa: Empresa) => {
-        setEmpresas([...empresas, empresa]);
+        const newEmpresas = [...empresas, empresa];
+        setEmpresas(newEmpresas);
     };
 
     const updateEmpleado = (empleado: Empleado) => {
-        setEmpleados(
-            empleados.map((e) => (e.id === empleado.id ? empleado : e))
-        );
+        const newEmpleados = empleados.map((e) => (e.id === empleado.id ? empleado : e));
+        setEmpleados(newEmpleados);
     };
 
     const updateEmpresa = (empresa: Empresa) => {
-        setEmpresas(empresas.map((e) => (e.id === empresa.id ? empresa : e)));
+        const newEmpresas = empresas.map((e) => (e.id === empresa.id ? empresa : e));
+        setEmpresas(newEmpresas);
     };
 
     const deleteEmpleado = (id: string) => {
-        setEmpleados(empleados.filter((e) => e.id !== id));
+        const newEmpleados = empleados.filter((e) => e.id !== id);
+        setEmpleados(newEmpleados);
     };
 
     const deleteEmpresa = (id: string) => {
-        setEmpresas(empresas.filter((e) => e.id !== id));
+        const newEmpresas = empresas.filter((e) => e.id !== id);
+        setEmpresas(newEmpresas);
     };
 
     return (

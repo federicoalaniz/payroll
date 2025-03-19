@@ -113,8 +113,19 @@ export const defaultDeductions: DeductionItem[] = [
 export const LiquidacionesProvider: React.FC<{ children: React.ReactNode }> = ({
     children,
 }) => {
-    const [liquidaciones, setLiquidaciones] = useState<Liquidacion[]>([]);
+    const [liquidaciones, setLiquidacionesState] = useState<Liquidacion[]>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('liquidaciones');
+            return saved ? JSON.parse(saved) : [];
+        }
+        return [];
+    });
     const { } = usePersonas();
+
+    const setLiquidaciones = (newLiquidaciones: Liquidacion[]) => {
+        setLiquidacionesState(newLiquidaciones);
+        localStorage.setItem('liquidaciones', JSON.stringify(newLiquidaciones));
+    };
 
     const addLiquidacion = (liquidacion: Liquidacion) => {
         // Asegurarse de que la liquidación tenga las deducciones por defecto
@@ -124,23 +135,26 @@ export const LiquidacionesProvider: React.FC<{ children: React.ReactNode }> = ({
                 ? liquidacion.deductionItems
                 : defaultDeductions,
         };
-        setLiquidaciones([...liquidaciones, newLiquidacion]);
+        const newLiquidaciones = [...liquidaciones, newLiquidacion];
+        setLiquidaciones(newLiquidaciones);
         toast.success("Liquidación guardada", {
             description: "La liquidación se ha guardado correctamente.",
         });
     };
 
     const updateLiquidacion = (liquidacion: Liquidacion) => {
-        setLiquidaciones(
-            liquidaciones.map((l) => (l.id === liquidacion.id ? liquidacion : l))
+        const newLiquidaciones = liquidaciones.map((l) => 
+            l.id === liquidacion.id ? liquidacion : l
         );
+        setLiquidaciones(newLiquidaciones);
         toast.success("Liquidación actualizada", {
             description: "La liquidación se ha actualizado correctamente.",
         });
     };
 
     const deleteLiquidacion = (id: string) => {
-        setLiquidaciones(liquidaciones.filter((l) => l.id !== id));
+        const newLiquidaciones = liquidaciones.filter((l) => l.id !== id);
+        setLiquidaciones(newLiquidaciones);
         toast.success("Liquidación eliminada", {
             description: "La liquidación se ha eliminado correctamente.",
         });

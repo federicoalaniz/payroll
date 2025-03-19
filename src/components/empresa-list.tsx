@@ -21,7 +21,7 @@ interface EmpresaListProps {
     onSelectEmpresa?: (empresa: Empresa) => void;
 }
 
-export function EmpresaList() {
+export function EmpresaList({ onSelectEmpresa }: EmpresaListProps) {
     const { empresas, deleteEmpresa } = usePersonas();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | undefined>();
@@ -39,6 +39,7 @@ export function EmpresaList() {
 
     const handleRowClick = (empresa: Empresa) => {
         setSelectedId(empresa.id);
+        onSelectEmpresa?.(empresa);
     };
 
     const handleDelete = (id: string, event: React.MouseEvent) => {

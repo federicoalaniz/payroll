@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
+    // DialogTrigger,
 } from "@/components/ui/dialog";
 import { LiquidacionForm } from "@/components/liquidacion-form";
 import { Liquidacion } from "@/contexts/LiquidacionesContext";
@@ -18,8 +16,8 @@ interface LiquidacionDialogProps {
     liquidacion?: Liquidacion;
     onSuccess: () => void;
     trigger?: React.ReactNode;
-    open?: boolean;
-    onOpenChange?: (open: boolean) => void;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
 }
 
 export function LiquidacionDialog({
@@ -27,28 +25,23 @@ export function LiquidacionDialog({
     empleadoId,
     liquidacion,
     onSuccess,
-    trigger,
-    open: controlledOpen,
-    onOpenChange: controlledOnOpenChange,
+    open,
+    onOpenChange,
 }: LiquidacionDialogProps) {
-    const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-    const open = controlledOpen ?? uncontrolledOpen;
-    const setOpen = controlledOnOpenChange ?? setUncontrolledOpen;
-
     const handleSuccess = () => {
-        setOpen(false);
+        onOpenChange(false);
         onSuccess();
     };
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            {/* <DialogTrigger asChild>
                 {trigger || (
                     <Button variant="outline" size="sm">
                         Nueva Liquidación
                     </Button>
                 )}
-            </DialogTrigger>
+            </DialogTrigger> */}
             <DialogContent className="max-w-[95vw] min-w-[70vw] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>

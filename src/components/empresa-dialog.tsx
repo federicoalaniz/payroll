@@ -35,7 +35,7 @@ export function EmpresaDialog({
                 </DialogHeader>
                 <EmpresaForm
                     empresaToEdit={empresaToEdit}
-                    onSubmitSuccess={() => onOpenChange(false)}
+                    onSuccess={() => onOpenChange(false)}
                 />
             </DialogContent>
         </Dialog>

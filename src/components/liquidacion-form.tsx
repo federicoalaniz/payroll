@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import {
     Table,
@@ -82,6 +82,24 @@ export function LiquidacionForm({
     const [presentismoPercentage, setPresentismoPercentage] = useState("8,33");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    
+
+
+
+    const resetForm = useCallback(() => {
+        if (!empleadoId) {
+            setSelectedEmpleadoId("");
+        }
+        setPeriodo("");
+        setFecha(new Date().toISOString().split("T")[0]);
+        setBasicSalary("");
+
+        setRowsRemunerative([]);
+        setRowsNonRemunerative([]);
+        setDeductionItems([]);
+        setPresentismoPercentage("8,33");
+    }, [empleadoId]);
+
     useEffect(() => {
         if (liquidacionToEdit) {
             setSelectedEmpleadoId(liquidacionToEdit.empleadoId);
@@ -99,24 +117,7 @@ export function LiquidacionForm({
                 setSelectedEmpleadoId(empleadoId);
             }
         }
-    }, [liquidacionToEdit, empleadoId]);
-
-
-
-    const resetForm = () => {
-        if (!empleadoId) {
-            setSelectedEmpleadoId("");
-        }
-        setPeriodo("");
-        setFecha(new Date().toISOString().split("T")[0]);
-        setBasicSalary("");
-
-        setRowsRemunerative([]);
-        setRowsNonRemunerative([]);
-        setDeductionItems([]);
-        setPresentismoPercentage("8,33");
-    };
-
+    }, [liquidacionToEdit, empleadoId, resetForm]);
     const addRemunerativeItem = () => {
         setRowsRemunerative([
             ...rowsRemunerative,

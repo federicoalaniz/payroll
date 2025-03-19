@@ -1,20 +1,21 @@
 "use client";
 
-import { usePersonas } from "@/contexts/PersonasContext";
-import { useLiquidaciones } from "@/contexts/LiquidacionesContext";
+import { Empleado, Empresa, usePersonas } from "@/contexts/PersonasContext";
+import { Liquidacion, useLiquidaciones } from "@/contexts/LiquidacionesContext";
 
-const empresas = [
+const empresas: Empresa[] = [
     {
         id: "1",
         nombre: "Constructora del Sur S.A.",
         razonSocial: "Constructora del Sur S.A.",
         cuit: "30-71234567-8",
+        telefono: "3814567890",
+        email: "info@constructoradelsur.com",
         domicilio: {
             calle: "Av. Rivadavia",
             numero: "1550",
             localidad: "San Miguel de Tucumán",
-            provincia: "Tucumán",
-            codigoPostal: "4000"
+            provincia: "Tucumán"
         }
     },
     {
@@ -22,183 +23,214 @@ const empresas = [
         nombre: "Metalúrgica Norte S.R.L.",
         razonSocial: "Metalúrgica Norte S.R.L.",
         cuit: "30-76543210-9",
+        telefono: "3884123456",
+        email: "contacto@metalurgicanorte.com",
         domicilio: {
             calle: "Av. San Martín",
             numero: "2340",
             localidad: "San Salvador de Jujuy",
-            provincia: "Jujuy",
-            codigoPostal: "4600"
+            provincia: "Jujuy"
         }
     }
 ];
 
-const empleados = [
+const empleados: Empleado[] = [
     // Empleados Constructora del Sur
     {
         id: "1",
         empresaId: "1",
-        nombre: "Juan Pérez",
+        nombre: "Juan",
+        apellido: "Pérez",
         cuil: "20-25678901-3",
         dni: "25678901",
+        telefono: "3814567891",
+        email: "juan.perez@email.com",
+        genero: "masculino",
         fechaIngreso: "2020-03-15",
         categoria: "Oficial Especializado",
         domicilio: {
             calle: "25 de Mayo",
             numero: "123",
             localidad: "San Miguel de Tucumán",
-            provincia: "Tucumán",
-            codigoPostal: "4000"
+            provincia: "Tucumán"
         }
     },
     {
         id: "2",
         empresaId: "1",
-        nombre: "María González",
+        nombre: "María",
+        apellido: "González",
         cuil: "27-30987654-1",
         dni: "30987654",
+        telefono: "3814567892",
+        email: "maria.gonzalez@email.com",
+        genero: "femenino",
         fechaIngreso: "2021-06-01",
         categoria: "Administrativo",
         domicilio: {
             calle: "Laprida",
             numero: "456",
             localidad: "San Miguel de Tucumán",
-            provincia: "Tucumán",
-            codigoPostal: "4000"
+            provincia: "Tucumán"
         }
     },
     {
         id: "3",
         empresaId: "1",
-        nombre: "Carlos Rodríguez",
+        nombre: "Carlos",
+        apellido: "Rodríguez",
         cuil: "20-28765432-4",
         dni: "28765432",
+        telefono: "3814567893",
+        email: "carlos.rodriguez@email.com",
+        genero: "masculino",
         fechaIngreso: "2019-11-20",
         categoria: "Oficial",
         domicilio: {
             calle: "San Lorenzo",
             numero: "789",
             localidad: "Yerba Buena",
-            provincia: "Tucumán",
-            codigoPostal: "4107"
+            provincia: "Tucumán"
         }
     },
     {
         id: "4",
         empresaId: "1",
-        nombre: "Ana Martínez",
+        nombre: "Ana",
+        apellido: "Martínez",
         cuil: "27-32123456-2",
         dni: "32123456",
+        telefono: "3814567894",
+        email: "ana.martinez@email.com",
+        genero: "femenino",
         fechaIngreso: "2022-02-15",
         categoria: "Medio Oficial",
         domicilio: {
             calle: "Belgrano",
             numero: "234",
             localidad: "San Miguel de Tucumán",
-            provincia: "Tucumán",
-            codigoPostal: "4000"
+            provincia: "Tucumán"
         }
     },
     {
         id: "5",
         empresaId: "1",
-        nombre: "Luis Sánchez",
+        nombre: "Luis",
+        apellido: "Sánchez",
         cuil: "20-27654321-5",
         dni: "27654321",
+        telefono: "3814567895",
+        email: "luis.sanchez@email.com",
+        genero: "masculino",
         fechaIngreso: "2020-09-10",
         categoria: "Capataz",
         domicilio: {
             calle: "9 de Julio",
             numero: "567",
             localidad: "San Miguel de Tucumán",
-            provincia: "Tucumán",
-            codigoPostal: "4000"
+            provincia: "Tucumán"
         }
     },
     // Empleados Metalúrgica Norte
     {
         id: "6",
         empresaId: "2",
-        nombre: "Roberto López",
+        nombre: "Roberto",
+        apellido: "López",
         cuil: "20-29876543-6",
         dni: "29876543",
+        telefono: "3884567890",
+        email: "roberto.lopez@email.com",
+        genero: "masculino",
         fechaIngreso: "2021-03-01",
         categoria: "Soldador",
         domicilio: {
             calle: "Alvear",
             numero: "890",
             localidad: "San Salvador de Jujuy",
-            provincia: "Jujuy",
-            codigoPostal: "4600"
+            provincia: "Jujuy"
         }
     },
     {
         id: "7",
         empresaId: "2",
-        nombre: "Patricia Díaz",
+        nombre: "Patricia",
+        apellido: "Díaz",
         cuil: "27-31234567-3",
         dni: "31234567",
+        telefono: "3884567891",
+        email: "patricia.diaz@email.com",
+        genero: "femenino",
         fechaIngreso: "2020-07-15",
         categoria: "Administrativa",
         domicilio: {
             calle: "Güemes",
             numero: "123",
             localidad: "San Salvador de Jujuy",
-            provincia: "Jujuy",
-            codigoPostal: "4600"
+            provincia: "Jujuy"
         }
     },
     {
         id: "8",
         empresaId: "2",
-        nombre: "Miguel Fernández",
+        nombre: "Miguel",
+        apellido: "Fernández",
         cuil: "20-26789012-7",
         dni: "26789012",
+        telefono: "3884567892",
+        email: "miguel.fernandez@email.com",
+        genero: "masculino",
         fechaIngreso: "2019-12-01",
         categoria: "Tornero",
         domicilio: {
             calle: "Lavalle",
             numero: "456",
             localidad: "San Salvador de Jujuy",
-            provincia: "Jujuy",
-            codigoPostal: "4600"
+            provincia: "Jujuy"
         }
     },
     {
         id: "9",
         empresaId: "2",
-        nombre: "Laura Torres",
+        nombre: "Laura",
+        apellido: "Torres",
         cuil: "27-33210987-4",
         dni: "33210987",
+        telefono: "3884567893",
+        email: "laura.torres@email.com",
+        genero: "femenino",
         fechaIngreso: "2022-01-10",
         categoria: "Operaria",
         domicilio: {
             calle: "Necochea",
             numero: "789",
             localidad: "San Salvador de Jujuy",
-            provincia: "Jujuy",
-            codigoPostal: "4600"
+            provincia: "Jujuy"
         }
     },
     {
         id: "10",
         empresaId: "2",
-        nombre: "Diego Ramírez",
+        nombre: "Diego",
+        apellido: "Ramírez",
         cuil: "20-28901234-8",
         dni: "28901234",
+        telefono: "3884567894",
+        email: "diego.ramirez@email.com",
+        genero: "masculino",
         fechaIngreso: "2020-11-20",
         categoria: "Fresador",
         domicilio: {
             calle: "Sarmiento",
             numero: "012",
             localidad: "San Salvador de Jujuy",
-            provincia: "Jujuy",
-            codigoPostal: "4600"
+            provincia: "Jujuy"
         }
     }
 ];
 
-function generateLiquidaciones() {
-    const liquidaciones = [];
+function generateLiquidaciones(): Liquidacion[] {
+    const liquidaciones: Liquidacion[] = [];
     const meses = ['01', '02', '03', '04', '05'];
     let liquidacionId = 1;
 
