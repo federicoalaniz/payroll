@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmpresaList } from "@/components/empresa-list";
 import { EmpleadoList } from "@/components/empleado-list";
 import Navbar from "@/components/Navbar";
-// import Navbar from "@/components/Navbar";
+
 
 export default function PersonasPage() {
     return (

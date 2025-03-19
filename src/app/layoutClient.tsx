@@ -6,7 +6,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PersonasProvider } from "@/contexts/PersonasContext";
-import Navbar from "@/components/Navbar";
+import Navbar from "@/components/navbar";
 import { SonnerProvider } from "@/components/sonner-provider";
 import { usePathname } from "next/navigation";
 
