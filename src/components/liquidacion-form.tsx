@@ -632,18 +632,21 @@ export function LiquidacionForm({
                             <TableHead className="w-[350px]">
                                 Concepto
                             </TableHead>
-                            <TableHead className="w-[150px] text-right">Importe</TableHead>
+                            <TableHead className="w-[150px] text-right">
+                                Importe
+                            </TableHead>
                             <TableHead className="text-center w-[150px]">
                                 Aplica %
                             </TableHead>
-                            <TableHead className="w-[150px] text-right">Valor %</TableHead>
+                            <TableHead className="w-[150px] text-right">
+                                Valor %
+                            </TableHead>
                             <TableHead className="text-right">
                                 Acciones
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-
                         <TableRow>
                             <TableCell>Sueldo básico</TableCell>
                             <TableCell>
@@ -785,7 +788,9 @@ export function LiquidacionForm({
                                         variant="ghost"
                                         size="icon"
                                         onClick={() =>
-                                            removeRemunerativeItem(Number(row.id))
+                                            removeRemunerativeItem(
+                                                Number(row.id)
+                                            )
                                         }
                                         className="text-red-500 hover:text-red-700"
                                     >
@@ -827,8 +832,12 @@ export function LiquidacionForm({
                             <TableHead className="w-[350px]">
                                 Concepto
                             </TableHead>
-                            <TableHead className="w-[150px] text-right">Importe</TableHead>
-                            <TableHead className="w-[150px] text-right">Valor %</TableHead>
+                            <TableHead className="w-[150px] text-right">
+                                Importe
+                            </TableHead>
+                            <TableHead className="w-[150px] text-right">
+                                Valor %
+                            </TableHead>
                             <TableHead className="text-right">
                                 Acciones
                             </TableHead>
@@ -956,12 +965,24 @@ export function LiquidacionForm({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-[350px]">Concepto</TableHead>
-                            <TableHead className="text-right w-[150px]">Remunerativo</TableHead>
-                            <TableHead className="text-right w-[150px]">No remunerativo</TableHead>
-                            <TableHead className="text-center w-[150px]">Aplica %</TableHead>
-                            <TableHead className="text-right w-[150px]">Valor %</TableHead>
-                            <TableHead className="text-right">Acciones</TableHead>
+                            <TableHead className="w-[350px]">
+                                Concepto
+                            </TableHead>
+                            <TableHead className="text-right w-[150px]">
+                                Remunerativo
+                            </TableHead>
+                            <TableHead className="text-right w-[150px]">
+                                No remunerativo
+                            </TableHead>
+                            <TableHead className="text-center w-[150px]">
+                                Aplica %
+                            </TableHead>
+                            <TableHead className="text-right w-[150px]">
+                                Valor %
+                            </TableHead>
+                            <TableHead className="text-right">
+                                Acciones
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1234,81 +1255,210 @@ export function LiquidacionForm({
             </div>
             {/* Footer con Total Neto */}
             <div className="mt-8 p-6 bg-primary/10 rounded-lg border-2 border-primary space-y-6">
-                {/* Detalle Remunerativo */}
-                <div className="space-y-2">
-                    <h3 className="font-bold text-lg">Detalle Remunerativo</h3>
-                    <div className="space-y-1">
-                        <div className="flex justify-between items-center">
-                            <span>Sueldo básico</span>
-                            <span>{basicSalary}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span>Antigüedad ({calculateYearsOfService()} años)</span>
-                            <span>{calculateSeniorityAmount()}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span>Presentismo ({presentismoPercentage}%)</span>
-                            <span>{calculateAmount(presentismoPercentage, basicSalary, true)}</span>
-                        </div>
-                        {rowsRemunerative.map((row) => (
-                            <div key={row.id} className="flex justify-between items-center">
-                                <span>{row.name} {row.checked && `(${row.percentage}%)`}</span>
-                                <span>{row.amount}</span>
-                            </div>
-                        ))}
-                        <div className="flex justify-between items-center font-bold pt-2 border-t">
-                            <span>Total Remunerativo</span>
-                            <span>{calculateTotalRemunerative()}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Detalle No Remunerativo */}
-                <div className="space-y-2">
-                    <h3 className="font-bold text-lg">Detalle No Remunerativo</h3>
-                    <div className="space-y-1">
-                        {rowsNonRemunerative.map((row) => (
-                            <div key={row.id} className="flex justify-between items-center">
-                                <span>{row.name} {(row.isAttendanceRow || row.isSeniorityRow) && `(${row.percentage}%)`}</span>
-                                <span>{row.amount}</span>
-                            </div>
-                        ))}
-                        <div className="flex justify-between items-center font-bold pt-2 border-t">
-                            <span>Total No Remunerativo</span>
-                            <span>{calculateTotalNonRemunerative()}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Detalle Deducciones */}
-                <div className="space-y-2">
-                    <h3 className="font-bold text-lg">Detalle Deducciones</h3>
-                    <div className="space-y-1">
-                        {deductionItems.map((item) => (
-                            <div key={item.id} className="flex justify-between items-center">
-                                <span>{item.name} {(item.checkedRemunerative || item.checkedNonRemunerative) && `(${item.percentage}%)`}</span>
-                                <span className="text-destructive">
-                                    -{item.checkedRemunerative ? 
-                                        formatNumber((Number.parseFloat(calculateTotalRemunerative().replace(/\./g, "").replace(",", ".")) * Number.parseFloat(item.percentage.replace(/\./g, "").replace(",", ".")) / 100).toFixed(2).replace(".", ",")) : 
-                                        item.remunerativeAmount}
-                                    {item.checkedNonRemunerative && " / -"}
-                                    {item.checkedNonRemunerative ? 
-                                        formatNumber((Number.parseFloat(calculateTotalNonRemunerative().replace(/\./g, "").replace(",", ".")) * Number.parseFloat(item.percentage.replace(/\./g, "").replace(",", ".")) / 100).toFixed(2).replace(".", ",")) : 
-                                        item.nonRemunerativeAmount}
-                                </span>
-                            </div>
-                        ))}
-                        <div className="flex justify-between items-center font-bold pt-2 border-t text-destructive">
-                            <span>Total Deducciones</span>
-                            <span>-{calculateDeductionTotals().total}</span>
-                        </div>
-                    </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b-2 border-primary">
+                                <th rowSpan={2} className="text-left py-2 ">
+                                    Concepto
+                                </th>
+                                <th
+                                    colSpan={2}
+                                    className="text-center py-2 border-r-2 border-primary"
+                                >
+                                    Haberes
+                                </th>
+                                <th colSpan={2} className="text-center py-2">
+                                    Deducciones
+                                </th>
+                            </tr>
+                            <tr className="border-b-2 border-primary">
+                                <th className="text-right py-2 px-4 w-[220px]">
+                                    Remunerativo
+                                </th>
+                                <th className="text-right py-2 px-4 w-[220px] border-r-2 border-primary">
+                                    No Remunerativo
+                                </th>
+                                <th className="text-right py-2 px-4 w-[220px]">
+                                    Remunerativo
+                                </th>
+                                <th className="text-right py-2 px-4 w-[220px]">
+                                    No Remunerativo
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="py-2">Sueldo básico</td>
+                                <td className="text-right px-4">
+                                    {basicSalary}
+                                </td>
+                                <td className="text-right px-4 border-r-2 border-primary">
+                                    -
+                                </td>
+                                <td className="text-right px-4">-</td>
+                                <td className="text-right px-4">-</td>
+                            </tr>
+                            <tr>
+                                <td className="py-2">
+                                    Antigüedad ({calculateYearsOfService()}{" "}
+                                    años)
+                                </td>
+                                <td className="text-right px-4">
+                                    {calculateSeniorityAmount()}
+                                </td>
+                                <td className="text-right px-4 border-r-2 border-primary">
+                                    -
+                                </td>
+                                <td className="text-right px-4">-</td>
+                                <td className="text-right px-4">-</td>
+                            </tr>
+                            <tr>
+                                <td className="py-2">
+                                    Presentismo ({presentismoPercentage}%)
+                                </td>
+                                <td className="text-right px-4">
+                                    {calculateAmount(
+                                        presentismoPercentage,
+                                        basicSalary,
+                                        true
+                                    )}
+                                </td>
+                                <td className="text-right px-4 border-r-2 border-primary">
+                                    -
+                                </td>
+                                <td className="text-right px-4">-</td>
+                                <td className="text-right px-4">-</td>
+                            </tr>
+                            {rowsRemunerative.map((row) => (
+                                <tr key={row.id}>
+                                    <td className="py-2">
+                                        {row.name}{" "}
+                                        {row.checked && `(${row.percentage}%)`}
+                                    </td>
+                                    <td className="text-right px-4">
+                                        {row.amount}
+                                    </td>
+                                    <td className="text-right px-4 border-r-2 border-primary">
+                                        -
+                                    </td>
+                                    <td className="text-right px-4">-</td>
+                                    <td className="text-right px-4">-</td>
+                                </tr>
+                            ))}
+                            {rowsNonRemunerative.map((row) => (
+                                <tr key={row.id}>
+                                    <td className="py-2">
+                                        {row.name}{" "}
+                                        {(row.isAttendanceRow ||
+                                            row.isSeniorityRow) &&
+                                            `(${row.percentage}%)`}
+                                    </td>
+                                    <td className="text-right px-4">-</td>
+                                    <td className="text-right px-4 border-r-2 border-primary">
+                                        {row.amount}
+                                    </td>
+                                    <td className="text-right px-4">-</td>
+                                    <td className="text-right px-4">-</td>
+                                </tr>
+                            ))}
+                            {deductionItems.map((item) => (
+                                <tr key={item.id}>
+                                    <td className="py-2">
+                                        {item.name}{" "}
+                                        {(item.checkedRemunerative ||
+                                            item.checkedNonRemunerative) &&
+                                            `(${item.percentage}%)`}
+                                    </td>
+                                    <td className="text-right px-4">-</td>
+                                    <td className="text-right px-4 border-r-2 border-primary">
+                                        -
+                                    </td>
+                                    <td className="text-right px-4">
+                                        {item.checkedRemunerative
+                                            ? `${formatNumber(
+                                                (
+                                                    (Number.parseFloat(
+                                                        calculateTotalRemunerative()
+                                                            .replace(
+                                                                /\./g,
+                                                                ""
+                                                            )
+                                                            .replace(",", ".")
+                                                      ) *
+                                                        Number.parseFloat(
+                                                            item.percentage
+                                                                .replace(
+                                                                    /\./g,
+                                                                    ""
+                                                                )
+                                                                .replace(
+                                                                    ",",
+                                                                    "."
+                                                                )
+                                                        )) /
+                                                    100
+                                                )
+                                                    .toFixed(2)
+                                                    .replace(".", ",")
+                                            )}`
+                                            : `-`}
+                                    </td>
+                                    <td className="text-right px-4">
+                                        {item.checkedNonRemunerative
+                                            ? `${formatNumber(
+                                                (
+                                                    (Number.parseFloat(
+                                                        calculateTotalNonRemunerative()
+                                                            .replace(
+                                                                /\./g,
+                                                                ""
+                                                            )
+                                                            .replace(",", ".")
+                                                      ) *
+                                                        Number.parseFloat(
+                                                            item.percentage
+                                                                .replace(
+                                                                    /\./g,
+                                                                    ""
+                                                                )
+                                                                .replace(
+                                                                    ",",
+                                                                    "."
+                                                                )
+                                                        )) /
+                                                    100
+                                                )
+                                                    .toFixed(2)
+                                                    .replace(".", ",")
+                                            )}`
+                                            : `-`}
+                                    </td>
+                                </tr>
+                            ))}
+                            <tr className="border-t-2 border-primary font-bold">
+                                <td className="py-2">Subtotales</td>
+                                <td className="text-right px-4">
+                                    {calculateTotalRemunerative()}
+                                </td>
+                                <td className="text-right px-4 border-r-2 border-primary">
+                                    {calculateTotalNonRemunerative()}
+                                </td>
+                                <td className="text-right px-4 text-destructive">
+                                    {calculateDeductionTotals().remunerative}
+                                </td>
+                                <td className="text-right px-4 text-destructive">
+                                    {calculateDeductionTotals().nonRemunerative}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 {/* Totales Finales */}
                 <div className="space-y-4 pt-4 border-t-2">
-                    <div className="flex justify-between items-center text-xl font-bold">
-                        <span>Total Sueldo Bruto</span>
+                    <div className="flex justify-between items-center text-xl font-semibold text-muted-foreground">
+                        <span>Sueldo Bruto</span>
                         <span>
                             {formatNumber(
                                 (
@@ -1328,8 +1478,29 @@ export function LiquidacionForm({
                             )}
                         </span>
                     </div>
-                    <div className="flex justify-between items-center text-2xl font-bold text-primary">
-                        <span>Total Sueldo Neto</span>
+                    <div className="flex justify-between items-center text-xl font-semibold text-muted-foreground">
+                        <span>Deducciones</span>
+                        <span>
+                            {formatNumber(
+                                (
+                                    Number.parseFloat(
+                                        calculateDeductionTotals()
+                                            .remunerative.replace(/\./g, "")
+                                            .replace(",", ".")
+                                    ) +
+                                    Number.parseFloat(
+                                        calculateDeductionTotals()
+                                            .nonRemunerative.replace(/\./g, "")
+                                            .replace(",", ".")
+                                    )
+                                )
+                                    .toFixed(2)
+                                    .replace(".", ",")
+                            )}
+                        </span>
+                    </div>
+                    <div className="flex justify-between items-center text-2xl font-bold">
+                        <span>SUELDO NETO</span>
                         <span>{calculateTotalNeto()}</span>
                     </div>
                 </div>

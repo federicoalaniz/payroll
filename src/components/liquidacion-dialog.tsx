@@ -27,7 +27,6 @@ export function LiquidacionDialog({
     open,
     onOpenChange,
 }: LiquidacionDialogProps) {
-
     const handleSuccess = () => {
         onOpenChange(false);
         onSuccess();

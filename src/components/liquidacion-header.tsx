@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePersonas } from "@/contexts/PersonasContext";
+import { formatDate } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import type { Domicilio } from "@/contexts/PersonasContext";
@@ -60,7 +61,7 @@ export function LiquidacionHeader({ empleadoId }: LiquidacionHeaderProps) {
     };
 
     return (
-        <Card className="mb-6">
+        <Card className="border-2 border-gray-500 shadow-none">
             <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
@@ -97,7 +98,7 @@ export function LiquidacionHeader({ empleadoId }: LiquidacionHeaderProps) {
                         </div>
                         <div>
                             <Label>Fecha de Ingreso</Label>
-                            <p className="text-sm">{new Date(empleado.fechaIngreso).toLocaleDateString()}</p>
+                            <p className="text-sm">{formatDate(empleado.fechaIngreso)}</p>
                         </div>
                     </div>
                 </div>

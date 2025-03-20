@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileEdit, Trash2, Plus } from "lucide-react";
+import { FileEdit, Trash2, Plus, Eye } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -18,6 +18,8 @@ import {
     type Liquidacion,
 } from "@/contexts/LiquidacionesContext";
 import { LiquidacionDialog } from "@/components/liquidacion-dialog";
+import { LiquidacionPreviewDialog } from "@/components/liquidacion-preview-dialog";
+import { formatNumber, formatDate } from "@/lib/utils";
 
 interface EmpleadoLiquidacionesProps {
     empleadoId: string;
@@ -33,6 +35,9 @@ export function EmpleadoLiquidaciones({
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLiquidacion, setSelectedLiquidacion] =
         useState<Liquidacion | null>(null);
+    const [previewLiquidacion, setPreviewLiquidacion] =
+        useState<Liquidacion | null>(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const liquidacionesEmpleado = getLiquidacionesByEmpleado(empleadoId);
 
@@ -55,6 +60,16 @@ export function EmpleadoLiquidaciones({
         setSelectedLiquidacion(null);
     };
 
+    const handlePreviewLiquidacion = (liquidacion: Liquidacion) => {
+        setPreviewLiquidacion(liquidacion);
+        setIsPreviewOpen(true);
+    };
+
+    const handleClosePreview = () => {
+        setIsPreviewOpen(false);
+        setPreviewLiquidacion(null);
+    };
+
     return (
         <Card className="w-full">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -70,19 +85,18 @@ export function EmpleadoLiquidaciones({
                         <TableRow>
                             <TableHead>Período</TableHead>
                             <TableHead>Fecha</TableHead>
-                            <TableHead className="text-right">
-                                Sueldo Neto
-                            </TableHead>
-                            <TableHead className="text-center">
-                                Acciones
-                            </TableHead>
+                            <TableHead className="text-right">Sueldo Básico</TableHead>
+                            <TableHead className="text-right">Sueldo Bruto</TableHead>
+                            <TableHead className="text-right">Deducciones</TableHead>
+                            <TableHead className="text-right">Sueldo Neto</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {liquidacionesEmpleado.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={4}
+                                    colSpan={7}
                                     className="text-center py-4"
                                 >
                                     No hay liquidaciones registradas para este
@@ -94,15 +108,39 @@ export function EmpleadoLiquidaciones({
                                 <TableRow key={liquidacion.id}>
                                     <TableCell>{liquidacion.periodo}</TableCell>
                                     <TableCell>
-                                        {new Date(
-                                            liquidacion.fecha
-                                        ).toLocaleDateString()}
+                                        {formatDate(liquidacion.fecha)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {liquidacion.totalNeto}
+                                        {formatNumber(liquidacion.basicSalary)}
                                     </TableCell>
-                                    <TableCell className="text-center">
-                                        <div className="flex justify-center gap-2">
+                                    <TableCell className="text-right">
+                                        {
+                                            formatNumber(
+                                                String(Number.parseFloat(liquidacion.totalRemunerativo)  
+                                                // + Number.parseFloat(liquidacion.totalNoRemunerativo)
+                                            ))
+                                        }
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {formatNumber(liquidacion.totalDeducciones)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {formatNumber(liquidacion.totalNeto)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    handlePreviewLiquidacion(
+                                                        liquidacion
+                                                    )
+                                                }
+                                                className="text-gray-500 hover:text-gray-700"
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -144,6 +182,14 @@ export function EmpleadoLiquidaciones({
                 liquidacion={selectedLiquidacion || undefined}
                 empleadoId={empleadoId}
             />
+
+            {previewLiquidacion && (
+                <LiquidacionPreviewDialog
+                    liquidacion={previewLiquidacion}
+                    open={isPreviewOpen}
+                    onOpenChange={handleClosePreview}
+                />
+            )}
         </Card>
     );
 }
