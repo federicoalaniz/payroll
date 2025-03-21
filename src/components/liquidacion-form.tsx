@@ -17,15 +17,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { usePersonas } from "@/contexts/PersonasContext";
 import { LiquidacionHeader } from "@/components/liquidacion-header";
 import {
     useLiquidaciones,
     type Liquidacion,
+    type PeriodoLiquidacion,
     type SalaryItem,
     type NonRemunerativeItem,
     type DeductionItem,
 } from "@/contexts/LiquidacionesContext";
+import { formatPeriodoToString, parsePeriodoString } from "@/lib/utils";
 import { toast } from "sonner";
 
 const formatNumber = (value: string) => {
@@ -69,6 +78,11 @@ export function LiquidacionForm({
         empleadoId || ""
     );
     const [periodo, setPeriodo] = useState<string>("");
+    const [periodoObj, setPeriodoObj] = useState<PeriodoLiquidacion>({
+        month: new Date().getMonth() + 1,
+        year: new Date().getFullYear(),
+        type: "monthly"
+    });
     const [fecha, setFecha] = useState<string>(
         new Date().toISOString().split("T")[0]
     );
@@ -91,6 +105,11 @@ export function LiquidacionForm({
             setSelectedEmpleadoId("");
         }
         setPeriodo("");
+        setPeriodoObj({
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear(),
+            type: "monthly"
+        });
         setFecha(new Date().toISOString().split("T")[0]);
         setBasicSalary("");
 
@@ -104,6 +123,18 @@ export function LiquidacionForm({
         if (liquidacionToEdit) {
             setSelectedEmpleadoId(liquidacionToEdit.empleadoId);
             setPeriodo(liquidacionToEdit.periodo);
+            
+            // Manejar el objeto de periodo
+            if (liquidacionToEdit.periodoObj) {
+                setPeriodoObj(liquidacionToEdit.periodoObj);
+            } else {
+                // Si no existe periodoObj, intentar parsearlo del string periodo
+                const parsedPeriodo = parsePeriodoString(liquidacionToEdit.periodo);
+                if (parsedPeriodo) {
+                    setPeriodoObj(parsedPeriodo);
+                }
+            }
+            
             setFecha(liquidacionToEdit.fecha);
             setBasicSalary(liquidacionToEdit.basicSalary);
 
@@ -527,9 +558,10 @@ export function LiquidacionForm({
             return;
         }
 
-        if (!periodo) {
+        // Validar que el periodo tenga valores válidos
+        if (!periodoObj.month || !periodoObj.year || !periodoObj.type) {
             toast.error("Error", {
-                description: "Debe ingresar un período.",
+                description: "Debe completar todos los campos del período.",
             });
             return;
         }
@@ -591,7 +623,8 @@ export function LiquidacionForm({
         const liquidacionData = {
             empleadoId: selectedEmpleadoId,
             fecha,
-            periodo,
+            periodo: periodo || formatPeriodoToString(periodoObj),
+            periodoObj,
             basicSalary,
 
             presentismoPercentage,
@@ -644,13 +677,62 @@ export function LiquidacionForm({
             {/* Datos básicos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="space-y-2">
-                    <Label htmlFor="periodo">Período</Label>
-                    <Input
-                        id="periodo"
-                        placeholder="Ej: Enero 2023"
-                        value={periodo}
-                        onChange={(e) => setPeriodo(e.target.value)}
-                    />
+                    <Label>Período</Label>
+                    <div className="grid grid-cols-3 gap-2">
+                        <div>
+                            {/* <Label htmlFor="periodoMonth">Mes</Label> */}
+                            <Select 
+                                value={periodoObj.month.toString()} 
+                                onValueChange={(value) => setPeriodoObj({...periodoObj, month: parseInt(value)})}
+                            >
+                                <SelectTrigger id="periodoMonth">
+                                    <SelectValue placeholder="Mes" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="1">Enero</SelectItem>
+                                    <SelectItem value="2">Febrero</SelectItem>
+                                    <SelectItem value="3">Marzo</SelectItem>
+                                    <SelectItem value="4">Abril</SelectItem>
+                                    <SelectItem value="5">Mayo</SelectItem>
+                                    <SelectItem value="6">Junio</SelectItem>
+                                    <SelectItem value="7">Julio</SelectItem>
+                                    <SelectItem value="8">Agosto</SelectItem>
+                                    <SelectItem value="9">Septiembre</SelectItem>
+                                    <SelectItem value="10">Octubre</SelectItem>
+                                    <SelectItem value="11">Noviembre</SelectItem>
+                                    <SelectItem value="12">Diciembre</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div>
+                            {/* <Label htmlFor="periodoYear">Año</Label> */}
+                            <Input
+                                id="periodoYear"
+                                type="number"
+                                value={periodoObj.year}
+                                onChange={(e) => setPeriodoObj({...periodoObj, year: parseInt(e.target.value)})}
+                            />
+                        </div>
+                        <div>
+                            {/* <Label htmlFor="periodoType">Tipo</Label> */}
+                            <Select 
+                                value={periodoObj.type} 
+                                onValueChange={(value: 'monthly' | 'quincena1' | 'quincena2') => setPeriodoObj({...periodoObj, type: value})}
+                            >
+                                <SelectTrigger id="periodoType">
+                                    <SelectValue placeholder="Tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="monthly">Mensual</SelectItem>
+                                    <SelectItem value="quincena1">Primera Quincena</SelectItem>
+                                    <SelectItem value="quincena2">Segunda Quincena</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1">
+                        {formatPeriodoToString(periodoObj)}
+                    </div>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="fecha">Fecha de liquidación</Label>

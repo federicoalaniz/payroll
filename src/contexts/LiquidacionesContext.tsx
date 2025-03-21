@@ -27,11 +27,18 @@ export interface DeductionItem extends SalaryItem {
     nonRemunerativeAmount: string;
 }
 
+export interface PeriodoLiquidacion {
+    month: number;
+    year: number;
+    type: 'monthly' | 'quincena1' | 'quincena2';
+}
+
 export interface Liquidacion {
     id: string;
     empleadoId: string;
     fecha: string;
-    periodo: string;
+    periodo: string; // Mantener para compatibilidad con datos existentes
+    periodoObj?: PeriodoLiquidacion; // Nuevo formato de periodo
     basicSalary: string;
     startDate: string;
     presentismoPercentage: string;

@@ -94,6 +94,65 @@ export const formatDate = (dateString: string): string => {
   return `${day}/${month}/${year}`;
 };
 
+// Funciones para el nuevo formato de periodo
+export const formatPeriodoToString = (periodoObj: { month: number; year: number; type: 'monthly' | 'quincena1' | 'quincena2' }): string => {
+  const monthNames = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+  
+  const typeLabels = {
+    'monthly': '',
+    'quincena1': ' - Primera Quincena',
+    'quincena2': ' - Segunda Quincena'
+  };
+  
+  return `${monthNames[periodoObj.month - 1]} ${periodoObj.year}${typeLabels[periodoObj.type]}`;
+};
+
+export const parsePeriodoString = (periodoStr: string): { month: number; year: number; type: 'monthly' | 'quincena1' | 'quincena2' } | null => {
+  // Para compatibilidad con el formato anterior (YYYY-MM)
+  if (periodoStr.match(/^\d{4}-\d{1,2}$/)) {
+    const [yearStr, monthStr] = periodoStr.split('-');
+    return {
+      month: parseInt(monthStr, 10),
+      year: parseInt(yearStr, 10),
+      type: 'monthly'
+    };
+  }
+  
+  // Intentar parsear el nuevo formato
+  const monthNames = [
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+  ];
+  
+  let type: 'monthly' | 'quincena1' | 'quincena2' = 'monthly';
+  let periodoLower = periodoStr.toLowerCase();
+  
+  if (periodoLower.includes('primera quincena')) {
+    type = 'quincena1';
+    periodoLower = periodoLower.replace('primera quincena', '').trim();
+  } else if (periodoLower.includes('segunda quincena')) {
+    type = 'quincena2';
+    periodoLower = periodoLower.replace('segunda quincena', '').trim();
+  }
+  
+  // Buscar el mes en el string
+  const monthIndex = monthNames.findIndex(month => periodoLower.includes(month));
+  if (monthIndex === -1) return null;
+  
+  // Buscar el año en el string
+  const yearMatch = periodoLower.match(/\d{4}/);
+  if (!yearMatch) return null;
+  
+  return {
+    month: monthIndex + 1,
+    year: parseInt(yearMatch[0], 10),
+    type
+  };
+};
+
 export const formatNumber = (value: string) => {
   if (!value) return "";
 

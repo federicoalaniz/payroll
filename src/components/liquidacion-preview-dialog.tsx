@@ -23,6 +23,17 @@ export function LiquidacionPreviewDialog({
 }: LiquidacionPreviewDialogProps) {
     console.log(liquidacion)
 
+    const formatPeriodType = (type: string | undefined) => {
+        switch (type) {
+            case "quincena1":
+                return "- Primera Quincena";
+            case "quincena2":
+                return "- Segunda Quincena";
+            default:
+                return "";
+        }
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] min-w-[70vw] max-h-[90vh] overflow-y-auto">
@@ -33,12 +44,12 @@ export function LiquidacionPreviewDialog({
                     </DialogTitle>
                 </DialogHeader>
                 <LiquidacionHeader empleadoId={liquidacion.empleadoId} />
-                <div className="text-black flex justify-between px-4 mb-4">
-                    <p><strong>Período liquidado:</strong> {liquidacion.periodo}</p>
+                <div className="text-black flex justify-between px-4">
+                    <p><strong>Período liquidado:</strong> {`${liquidacion.periodo} ${formatPeriodType(liquidacion.periodoObj?.type)}`} </p>
                     <p><strong>Fecha de liquidación:</strong> {formatDate(liquidacion.fecha)}</p>
                 </div>
                 
-                <div className="mt-8 p-6 rounded-lg border-2 border-primary space-y-6">
+                <div className="p-6 rounded-lg border-2 border-primary space-y-6">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
