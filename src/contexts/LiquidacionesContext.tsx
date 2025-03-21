@@ -38,9 +38,15 @@ export interface Liquidacion {
     rowsRemunerative: SalaryItem[];
     rowsNonRemunerative: NonRemunerativeItem[];
     deductionItems: DeductionItem[];
+    // Valores calculados
+    antiguedadAmount: string;
+    presentismoAmount: string;
+    sueldoBruto: string;
     totalRemunerativo: string;
     totalNoRemunerativo: string;
     totalDeducciones: string;
+    deduccionesRemunerativas: string;
+    deduccionesNoRemunerativas: string;
     totalNeto: string;
 }
 

@@ -86,6 +86,8 @@ export function EmpleadoLiquidaciones({
                             <TableHead>Período</TableHead>
                             <TableHead>Fecha</TableHead>
                             <TableHead className="text-right">Sueldo Básico</TableHead>
+                            <TableHead className="text-right">Remunerativo</TableHead>
+                            <TableHead className="text-right">No Remunerativo</TableHead>
                             <TableHead className="text-right">Sueldo Bruto</TableHead>
                             <TableHead className="text-right">Deducciones</TableHead>
                             <TableHead className="text-right">Sueldo Neto</TableHead>
@@ -114,12 +116,13 @@ export function EmpleadoLiquidaciones({
                                         {formatNumber(liquidacion.basicSalary)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        {
-                                            formatNumber(
-                                                String(Number.parseFloat(liquidacion.totalRemunerativo)  
-                                                // + Number.parseFloat(liquidacion.totalNoRemunerativo)
-                                            ))
-                                        }
+                                        {formatNumber(liquidacion.totalRemunerativo)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {formatNumber(liquidacion.totalNoRemunerativo)}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        {formatNumber(liquidacion.sueldoBruto)}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         {formatNumber(liquidacion.totalDeducciones)}

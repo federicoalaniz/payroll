@@ -440,7 +440,10 @@ export function LiquidacionForm({
             calculateAmount(presentismoPercentage, basicSalary, true)
         );
         const totalRemunerative = rowsRemunerative.reduce((total, row) => {
-            return total + formatToNumber(row.amount);
+            if (row.checked) {
+                return total + formatToNumber(row.amount);
+            }
+            return total;
         }, 0);
 
         return (salary + seniorityAmount + attendanceAmount + totalRemunerative)
@@ -547,6 +550,44 @@ export function LiquidacionForm({
 
         setIsSubmitting(true);
 
+        // Actualizar los montos de las deducciones antes de guardar
+        const updatedDeductionItems = deductionItems.map(item => {
+            let remunerativeAmount = item.remunerativeAmount;
+            let nonRemunerativeAmount = item.nonRemunerativeAmount;
+            
+            // Si está marcado como remunerativo, calcular el monto
+            if (item.checkedRemunerative) {
+                const baseAmount = Number.parseFloat(
+                    calculateTotalRemunerative().replace(/\./g, "").replace(",", ".")
+                );
+                const percentage = Number.parseFloat(
+                    item.percentage.replace(/\./g, "").replace(",", ".")
+                );
+                remunerativeAmount = formatNumber(
+                    ((baseAmount * percentage) / 100).toFixed(2).replace(".", ",")
+                );
+            }
+            
+            // Si está marcado como no remunerativo, calcular el monto
+            if (item.checkedNonRemunerative) {
+                const baseAmount = Number.parseFloat(
+                    calculateTotalNonRemunerative().replace(/\./g, "").replace(",", ".")
+                );
+                const percentage = Number.parseFloat(
+                    item.percentage.replace(/\./g, "").replace(",", ".")
+                );
+                nonRemunerativeAmount = formatNumber(
+                    ((baseAmount * percentage) / 100).toFixed(2).replace(".", ",")
+                );
+            }
+            
+            return {
+                ...item,
+                remunerativeAmount,
+                nonRemunerativeAmount
+            };
+        });
+
         const liquidacionData = {
             empleadoId: selectedEmpleadoId,
             fecha,
@@ -556,9 +597,17 @@ export function LiquidacionForm({
             presentismoPercentage,
             rowsRemunerative,
             rowsNonRemunerative,
-            deductionItems,
+            deductionItems: updatedDeductionItems,
+            // Valores calculados
+            antiguedadAmount: calculateSeniorityAmount(),
+            presentismoAmount: calculateAmount(presentismoPercentage, basicSalary, true),
+            sueldoBruto: (Number.parseFloat(calculateTotalRemunerative().replace(/\./g, "").replace(",", ".")) + 
+                        Number.parseFloat(calculateTotalNonRemunerative().replace(/\./g, "").replace(",", ".")))
+                        .toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, "."),
             totalRemunerativo: calculateTotalRemunerative(),
             totalNoRemunerativo: calculateTotalNonRemunerative(),
+            deduccionesRemunerativas: calculateDeductionTotals().remunerative,
+            deduccionesNoRemunerativas: calculateDeductionTotals().nonRemunerative,
             totalDeducciones: calculateDeductionTotals().total,
             totalNeto: calculateTotalNeto(),
         };

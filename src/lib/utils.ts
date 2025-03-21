@@ -19,7 +19,7 @@ export const calculateSeniorityAmount = (basicSalary: string, yearsOfService: nu
   return amount.toFixed(2).replace(".", ",");
 };
 
-export const calculateAmount = (percentage: string, base: string, isRemunerative: boolean): string => {
+export const calculateAmount = (percentage: string, base: string, isRemunerative: boolean = true): string => {
   const baseAmount = parseFloat(base.replace(/\./g, "").replace(",", "."));
   const percentageValue = parseFloat(percentage.replace(",", "."));
   const amount = (baseAmount * percentageValue) / 100;
@@ -27,14 +27,18 @@ export const calculateAmount = (percentage: string, base: string, isRemunerative
 };
 
 export const calculateTotalRemunerative = (basicSalary: string, items: SalaryItem[]): string => {
+  // Convertir el sueldo básico a número
   const base = parseFloat(basicSalary.replace(/\./g, "").replace(",", "."));
+  
+  // Sumar todos los items remunerativos (incluyendo antigüedad y presentismo)
   const total = items.reduce((sum, item) => {
-    if (item.checked) {
-      const amount = parseFloat(item.amount.replace(/\./g, "").replace(",", "."));
-      return sum + amount;
-    }
-    return sum;
-  }, base);
+      if (item.checked || item.isSeniorityRow || item.isAttendanceRow) {
+          const amount = parseFloat(item.amount.replace(/\./g, "").replace(",", "."));
+          return sum + amount;
+      }
+      return sum;
+  }, base); // Agregamos el sueldo básico como valor inicial
+  
   return total.toFixed(2).replace(".", ",");
 };
 

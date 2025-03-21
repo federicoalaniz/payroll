@@ -236,13 +236,58 @@ function generateLiquidaciones(): Liquidacion[] {
 
     empleados.forEach(empleado => {
         meses.forEach(mes => {
+            // Calcular años de antigüedad
+            const fechaIngreso = new Date(empleado.fechaIngreso);
+            const fechaLiquidacion = new Date(`2024-${mes}-01`);
+            const diffTime = Math.abs(fechaLiquidacion.getTime() - fechaIngreso.getTime());
+            const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
+            
+            // Sueldo básico
             const basicSalary = (200000 + Math.random() * 100000).toFixed(2).replace('.', ',');
-            const totalRemunerativo = (parseFloat(basicSalary.replace(',', '.')) * 1.1).toFixed(2).replace('.', ',');
-            const totalNoRemunerativo = (parseFloat(basicSalary.replace(',', '.')) * 0.15).toFixed(2).replace('.', ',');
-            const totalDeducciones = (parseFloat(basicSalary.replace(',', '.')) * 0.22).toFixed(2).replace('.', ',');
-            const totalNeto = (parseFloat(totalRemunerativo.replace(',', '.')) + 
-                             parseFloat(totalNoRemunerativo.replace(',', '.')) - 
-                             parseFloat(totalDeducciones.replace(',', '.'))).toFixed(2).replace('.', ',');
+            const basicSalaryNum = parseFloat(basicSalary.replace(',', '.'));
+            
+            // Antigüedad (1% por año)
+            const antiguedadAmount = (basicSalaryNum * 0.01 * diffYears).toFixed(2).replace('.', ',');
+            const antiguedadAmountNum = parseFloat(antiguedadAmount.replace(',', '.'));
+            
+            // Presentismo (8,33% sobre básico + antigüedad)
+            const presentismoPercentage = "8,33";
+            const presentismoAmountNum = (basicSalaryNum + antiguedadAmountNum) * 0.0833;
+            const presentismoAmount = presentismoAmountNum.toFixed(2).replace('.', ',');
+            
+            // Total remunerativo (básico + antigüedad + presentismo)
+            const totalRemunerativoNum = basicSalaryNum + antiguedadAmountNum + presentismoAmountNum;
+            const totalRemunerativo = totalRemunerativoNum.toFixed(2).replace('.', ',');
+            
+            // No remunerativo (bono productividad)
+            const bonoProductividadNum = basicSalaryNum * 0.15;
+            const bonoProductividad = bonoProductividadNum.toFixed(2).replace('.', ',');
+            const totalNoRemunerativoNum = bonoProductividadNum;
+            const totalNoRemunerativo = totalNoRemunerativoNum.toFixed(2).replace('.', ',');
+            
+            // Sueldo bruto (remunerativo + no remunerativo)
+            const sueldoBrutoNum = totalRemunerativoNum + totalNoRemunerativoNum;
+            const sueldoBruto = sueldoBrutoNum.toFixed(2).replace('.', ',');
+            
+            // Deducciones
+            const jubilacionNum = totalRemunerativoNum * 0.11;
+            const jubilacion = jubilacionNum.toFixed(2).replace('.', ',');
+            
+            const obraSocialNum = totalRemunerativoNum * 0.03;
+            const obraSocial = obraSocialNum.toFixed(2).replace('.', ',');
+            
+            // Total deducciones
+            const deduccionesRemunerativasNum = jubilacionNum + obraSocialNum;
+            const deduccionesRemunerativas = deduccionesRemunerativasNum.toFixed(2).replace('.', ',');
+            const deduccionesNoRemunerativasNum = 0;
+            const deduccionesNoRemunerativas = deduccionesNoRemunerativasNum.toFixed(2).replace('.', ',');
+            
+            const totalDeduccionesNum = deduccionesRemunerativasNum + deduccionesNoRemunerativasNum;
+            const totalDeducciones = totalDeduccionesNum.toFixed(2).replace('.', ',');
+            
+            // Sueldo neto
+            const totalNetoNum = sueldoBrutoNum - totalDeduccionesNum;
+            const totalNeto = totalNetoNum.toFixed(2).replace('.', ',');
 
             liquidaciones.push({
                 id: liquidacionId.toString(),
@@ -251,13 +296,13 @@ function generateLiquidaciones(): Liquidacion[] {
                 periodo: `2024-${mes}`,
                 basicSalary,
                 startDate: empleado.fechaIngreso,
-                presentismoPercentage: "8,33",
+                presentismoPercentage,
                 rowsRemunerative: [
                     {
                         id: "1",
                         name: "Presentismo",
-                        percentage: "8,33",
-                        amount: (parseFloat(basicSalary.replace(',', '.')) * 0.0833).toFixed(2).replace('.', ','),
+                        percentage: presentismoPercentage,
+                        amount: presentismoAmount,
                         checked: true,
                         isAttendanceRow: true
                     }
@@ -267,8 +312,17 @@ function generateLiquidaciones(): Liquidacion[] {
                         id: "1",
                         name: "Bono por productividad",
                         percentage: "15",
-                        amount: (parseFloat(basicSalary.replace(',', '.')) * 0.15).toFixed(2).replace('.', ','),
+                        amount: bonoProductividad,
                         checked: true,
+                        isRemunerative: false
+                    },
+                    {
+                        id: "2",
+                        name: `Antigüedad 1% - ${diffYears} años`,
+                        percentage: diffYears.toString(),
+                        amount: antiguedadAmount,
+                        checked: true,
+                        isSeniorityRow: true,
                         isRemunerative: false
                     }
                 ],
@@ -277,27 +331,33 @@ function generateLiquidaciones(): Liquidacion[] {
                         id: "1",
                         name: "Jubilación",
                         percentage: "11",
-                        amount: (parseFloat(totalRemunerativo.replace(',', '.')) * 0.11).toFixed(2).replace('.', ','),
+                        amount: jubilacion,
                         checked: true,
                         checkedRemunerative: true,
                         checkedNonRemunerative: false,
-                        remunerativeAmount: (parseFloat(totalRemunerativo.replace(',', '.')) * 0.11).toFixed(2).replace('.', ','),
+                        remunerativeAmount: jubilacion,
                         nonRemunerativeAmount: "0,00"
                     },
                     {
                         id: "2",
                         name: "Obra Social",
                         percentage: "3",
-                        amount: (parseFloat(totalRemunerativo.replace(',', '.')) * 0.03).toFixed(2).replace('.', ','),
+                        amount: obraSocial,
                         checked: true,
                         checkedRemunerative: true,
                         checkedNonRemunerative: false,
-                        remunerativeAmount: (parseFloat(totalRemunerativo.replace(',', '.')) * 0.03).toFixed(2).replace('.', ','),
+                        remunerativeAmount: obraSocial,
                         nonRemunerativeAmount: "0,00"
                     }
                 ],
+                // Valores calculados
+                antiguedadAmount,
+                presentismoAmount,
+                sueldoBruto,
                 totalRemunerativo,
                 totalNoRemunerativo,
+                deduccionesRemunerativas,
+                deduccionesNoRemunerativas,
                 totalDeducciones,
                 totalNeto
             });
