@@ -7,7 +7,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Liquidacion } from "@/contexts/LiquidacionesContext";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber, formatAmountInWords } from "@/lib/utils";
 import { LiquidacionHeader } from "@/components/liquidacion-header";
 
 interface LiquidacionPreviewDialogProps {
@@ -38,7 +38,7 @@ export function LiquidacionPreviewDialog({
                     <p><strong>Fecha de liquidación:</strong> {formatDate(liquidacion.fecha)}</p>
                 </div>
                 
-                <div className="mt-8 p-6 bg-primary/10 rounded-lg border-2 border-primary space-y-6">
+                <div className="mt-8 p-6 rounded-lg border-2 border-primary space-y-6">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
@@ -155,12 +155,12 @@ export function LiquidacionPreviewDialog({
                                         <td className="text-right px-4 border-r-2 border-primary">
                                             -
                                         </td>
-                                        <td className="text-right px-4 text-destructive">
+                                        <td className="text-right px-4">
                                             {item.remunerativeAmount && parseFloat(item.remunerativeAmount.replace(",", ".")) > 0
                                                 ? formatNumber(item.remunerativeAmount)
                                                 : `-`}
                                         </td>
-                                        <td className="text-right px-4 text-destructive">
+                                        <td className="text-right px-4">
                                             {item.nonRemunerativeAmount && parseFloat(item.nonRemunerativeAmount.replace(",", ".")) > 0
                                                 ? formatNumber(item.nonRemunerativeAmount)
                                                 : `-`}
@@ -175,10 +175,10 @@ export function LiquidacionPreviewDialog({
                                     <td className="text-right px-4 border-r-2 border-primary">
                                         {formatNumber(liquidacion.totalNoRemunerativo)}
                                     </td>
-                                    <td className="text-right px-4 text-destructive">
+                                    <td className="text-right px-4">
                                         {formatNumber(liquidacion.deduccionesRemunerativas)}
                                     </td>
-                                    <td className="text-right px-4 text-destructive">
+                                    <td className="text-right px-4">
                                         {formatNumber(liquidacion.deduccionesNoRemunerativas)}
                                     </td>
                                 </tr>
@@ -203,6 +203,21 @@ export function LiquidacionPreviewDialog({
                         <div className="flex justify-between items-center text-2xl font-bold">
                             <span>SUELDO NETO</span>
                             <span>{formatNumber(liquidacion.totalNeto)}</span>
+                        </div>
+                    </div>
+                    
+                    {/* Sección de Recibo */}
+                    <div className="mt-8 pt-6 border-t-2 border-primary">
+                        <div className="space-y-4">
+                            <p className="text-lg">Recibí la suma de pesos: <span className="font-semibold">{formatAmountInWords(liquidacion.totalNeto)}</span>.</p>
+                            <p className="text-lg">Por los conceptos indicados en la presente liquidación, dejando constancia de haber recibido un duplicado de este recibo.</p>
+                            <p className="text-lg font-semibold">Son pesos: {formatNumber(liquidacion.totalNeto)}</p>
+                        </div>
+                        
+                        <div className="mt-10 flex justify-end">
+                            <div className="w-64 border-t-2 border-black pt-2 text-center">
+                                <p>Firma del empleado</p>
+                            </div>
                         </div>
                     </div>
                 </div>

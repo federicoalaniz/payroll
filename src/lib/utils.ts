@@ -117,3 +117,97 @@ export const formatNumber = (value: string) => {
   // Retorna la parte entera con los decimales formateados
   return `${integer},${decimal}`;
 };
+
+export const numberToWords = (number: number): string => {
+  const units = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
+  const teens = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve'];
+  const tens = ['', 'diez', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+  const hundreds = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+  const convertLessThanOneThousand = (num: number): string => {
+    if (num === 0) return '';
+    
+    if (num === 100) return 'cien';
+    
+    let result = '';
+    
+    // Handle hundreds
+    if (num >= 100) {
+      result = hundreds[Math.floor(num / 100)] + ' ';
+      num %= 100;
+    }
+    
+    // Handle tens and units
+    if (num >= 10 && num < 20) {
+      // Special case for 10-19
+      result += teens[num - 10];
+      return result.trim();
+    } else if (num >= 20) {
+      // For 20 and above
+      const ten = Math.floor(num / 10);
+      const unit = num % 10;
+      
+      if (unit === 0) {
+        result += tens[ten];
+      } else if (ten === 2) {
+        // Special case for 21-29
+        result += 'veinti' + units[unit];
+      } else {
+        result += tens[ten] + ' y ' + units[unit];
+      }
+    } else {
+      // For 1-9
+      result += units[num];
+    }
+    
+    return result.trim();
+  };
+
+  if (number === 0) return 'cero';
+  
+  let result = '';
+  
+  // Handle millions
+  if (number >= 1000000) {
+    const millions = Math.floor(number / 1000000);
+    if (millions === 1) {
+      result += 'un millón ';
+    } else {
+      result += convertLessThanOneThousand(millions) + ' millones ';
+    }
+    number %= 1000000;
+  }
+  
+  // Handle thousands
+  if (number >= 1000) {
+    const thousands = Math.floor(number / 1000);
+    if (thousands === 1) {
+      result += 'mil ';
+    } else {
+      result += convertLessThanOneThousand(thousands) + ' mil ';
+    }
+    number %= 1000;
+  }
+  
+  // Handle the rest
+  if (number > 0) {
+    result += convertLessThanOneThousand(number);
+  }
+  
+  return result.trim();
+};
+
+export const formatAmountInWords = (amount: string): string => {
+  // Parse the amount string to get the integer and decimal parts
+  const cleanAmount = amount.replace(/\./g, "").replace(",", ".");
+  const [integerPart, decimalPart = "00"] = parseFloat(cleanAmount).toFixed(2).split(".");
+  
+  // Convert integer part to words
+  const integerWords = numberToWords(parseInt(integerPart));
+  
+  // Capitalize first letter
+  const capitalizedWords = integerWords.charAt(0).toUpperCase() + integerWords.slice(1);
+  
+  // Format the final string
+  return `${capitalizedWords} con ${decimalPart}/100`;
+};
