@@ -19,7 +19,7 @@ export const calculateSeniorityAmount = (basicSalary: string, yearsOfService: nu
   return amount.toFixed(2).replace(".", ",");
 };
 
-export const calculateAmount = (percentage: string, base: string, isRemunerative: boolean = true): string => {
+export const calculateAmount = (percentage: string, base: string): string => {
   const baseAmount = parseFloat(base.replace(/\./g, "").replace(",", "."));
   const percentageValue = parseFloat(percentage.replace(",", "."));
   const amount = (baseAmount * percentageValue) / 100;

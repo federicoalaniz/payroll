@@ -297,9 +297,12 @@ export function EmpresaForm({ empresaToEdit, onSuccess }: EmpresaFormProps) {
                         </SelectTrigger>
                         <SelectContent>
                           {form.watch("domicilio.provincia") &&
-                            localities[form.watch("domicilio.provincia")].map(
+                            localities[form.watch("domicilio.provincia")]?.map(
                               (locality) => (
-                                <SelectItem key={locality} value={`${locality}|${locality}`}>
+                                <SelectItem 
+                                  key={`${form.watch("domicilio.provincia")}-${locality}`} 
+                                  value={locality}
+                                >
                                   {locality}
                                 </SelectItem>
                               )

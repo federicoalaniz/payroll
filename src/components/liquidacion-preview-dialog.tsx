@@ -9,6 +9,10 @@ import {
 import { Liquidacion } from "@/contexts/LiquidacionesContext";
 import { formatDate, formatNumber, formatAmountInWords } from "@/lib/utils";
 import { LiquidacionHeader } from "@/components/liquidacion-header";
+import { Download, Printer } from "lucide-react";
+import { generateLiquidacionPDF } from "@/lib/pdf-generator";
+import { Button } from "@/components/ui/button";
+import { usePersonas } from "@/contexts/PersonasContext";
 
 interface LiquidacionPreviewDialogProps {
     liquidacion: Liquidacion;
@@ -22,6 +26,11 @@ export function LiquidacionPreviewDialog({
     onOpenChange,
 }: LiquidacionPreviewDialogProps) {
     console.log(liquidacion)
+    
+    // Get employee data from context
+    const { empleados, empresas } = usePersonas();
+    const empleado = empleados.find(e => e.id === liquidacion.empleadoId);
+    const empresa = empleado ? empresas.find(e => e.id === empleado.empresaId) : undefined;
 
     const formatPeriodType = (type: string | undefined) => {
         switch (type) {
@@ -37,11 +46,48 @@ export function LiquidacionPreviewDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[95vw] min-w-[70vw] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
+                <DialogHeader className="flex flex-row items-center justify-between">
                     <DialogTitle>
                         {" "}
-                        Liquidación - {liquidacion.periodo}
+                        Liquidación de Haberes
                     </DialogTitle>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="icon" onClick={async () => {
+                            const employeeInfo = {
+                                name: empleado?.nombre || '',
+                                cuil: empleado?.cuil || '',
+                                address: empleado?.domicilio ? `${empleado.domicilio.calle} ${empleado.domicilio.numero}, ${empleado.domicilio.localidad}, ${empleado.domicilio.provincia}` : '',
+                                startDate: empleado?.fechaIngreso || '',
+                                category: empleado?.categoria || '',
+                                empresaNombre: empresa?.nombre || '',
+                                empresaCuit: empresa?.cuit || '',
+                                empresaDomicilio: empresa?.domicilio ? `${empresa.domicilio.calle} ${empresa.domicilio.numero}, ${empresa.domicilio.localidad}, ${empresa.domicilio.provincia}` : ''
+                            };
+                            const doc = await generateLiquidacionPDF(liquidacion, employeeInfo);
+                            doc.save(`liquidacion-${liquidacion.periodo}.pdf`);
+                        }}>
+                            <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={async () => {
+                            const employeeInfo = {
+                                name: empleado?.nombre || '',
+                                cuil: empleado?.cuil || '',
+                                address: empleado?.domicilio ? `${empleado.domicilio.calle} ${empleado.domicilio.numero}, ${empleado.domicilio.localidad}, ${empleado.domicilio.provincia}` : '',
+                                startDate: empleado?.fechaIngreso || '',
+                                category: empleado?.categoria || '',
+                                empresaNombre: empresa?.nombre || '',
+                                empresaCuit: empresa?.cuit || '',
+                                empresaDomicilio: empresa?.domicilio ? `${empresa.domicilio.calle} ${empresa.domicilio.numero}, ${empresa.domicilio.localidad}, ${empresa.domicilio.provincia}` : ''
+                            };
+                            const doc = await generateLiquidacionPDF(liquidacion, employeeInfo);
+                            // Convertir el PDF a blob y abrir en nueva pestaña
+                            const pdfBlob = doc.output('blob');
+                            const blobUrl = URL.createObjectURL(pdfBlob);
+                            window.open(blobUrl, '_blank');
+                        }}>
+                            <Printer className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </DialogHeader>
                 <LiquidacionHeader empleadoId={liquidacion.empleadoId} />
                 <div className="text-black flex justify-between px-4">
@@ -49,17 +95,17 @@ export function LiquidacionPreviewDialog({
                     <p><strong>Fecha de liquidación:</strong> {formatDate(liquidacion.fecha)}</p>
                 </div>
                 
-                <div className="p-6 rounded-lg border-2 border-primary space-y-6">
+                <div className="p-6 rounded-lg border-2 border-gray-500 space-y-6">
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b-2 border-primary">
+                                <tr className="border-b-2 border-gray-500">
                                     <th rowSpan={2} className="text-left py-2 ">
                                         Concepto
                                     </th>
                                     <th
                                         colSpan={2}
-                                        className="text-center py-2 border-r-2 border-primary"
+                                        className="text-center py-2 border-r-2 border-gray-500"
                                     >
                                         Haberes
                                     </th>
@@ -67,11 +113,11 @@ export function LiquidacionPreviewDialog({
                                         Deducciones
                                     </th>
                                 </tr>
-                                <tr className="border-b-2 border-primary">
+                                <tr className="border-b-2 border-gray-500">
                                     <th className="text-right py-2 px-4 w-[220px]">
                                         Remunerativo
                                     </th>
-                                    <th className="text-right py-2 px-4 w-[220px] border-r-2 border-primary">
+                                    <th className="text-right py-2 px-4 w-[220px] border-r-2 border-gray-500">
                                         No Remunerativo
                                     </th>
                                     <th className="text-right py-2 px-4 w-[220px]">
@@ -88,7 +134,7 @@ export function LiquidacionPreviewDialog({
                                     <td className="text-right px-4">
                                         {formatNumber(liquidacion.basicSalary)}
                                     </td>
-                                    <td className="text-right px-4 border-r-2 border-primary">
+                                    <td className="text-right px-4 border-r-2 border-gray-500">
                                         -
                                     </td>
                                     <td className="text-right px-4">-</td>
@@ -101,7 +147,7 @@ export function LiquidacionPreviewDialog({
                                     <td className="text-right px-4">
                                         {formatNumber(liquidacion.antiguedadAmount)}
                                     </td>
-                                    <td className="text-right px-4 border-r-2 border-primary">
+                                    <td className="text-right px-4 border-r-2 border-gray-500">
                                         -
                                     </td>
                                     <td className="text-right px-4">-</td>
@@ -114,7 +160,7 @@ export function LiquidacionPreviewDialog({
                                     <td className="text-right px-4">
                                         {formatNumber(liquidacion.presentismoAmount)}
                                     </td>
-                                    <td className="text-right px-4 border-r-2 border-primary">
+                                    <td className="text-right px-4 border-r-2 border-gray-500">
                                         -
                                     </td>
                                     <td className="text-right px-4">-</td>
@@ -129,7 +175,7 @@ export function LiquidacionPreviewDialog({
                                         <td className="text-right px-4">
                                             {formatNumber(row.amount)}
                                         </td>
-                                        <td className="text-right px-4 border-r-2 border-primary">
+                                        <td className="text-right px-4 border-r-2 border-gray-500">
                                             -
                                         </td>
                                         <td className="text-right px-4">-</td>
@@ -147,7 +193,7 @@ export function LiquidacionPreviewDialog({
                                                 `(${row.percentage}%)`}
                                         </td>
                                         <td className="text-right px-4">-</td>
-                                        <td className="text-right px-4 border-r-2 border-primary">
+                                        <td className="text-right px-4 border-r-2 border-gray-500">
                                             {formatNumber(row.amount)}
                                         </td>
                                         <td className="text-right px-4">-</td>
@@ -163,7 +209,7 @@ export function LiquidacionPreviewDialog({
                                                 `(${item.percentage}%)`}
                                         </td>
                                         <td className="text-right px-4">-</td>
-                                        <td className="text-right px-4 border-r-2 border-primary">
+                                        <td className="text-right px-4 border-r-2 border-gray-500">
                                             -
                                         </td>
                                         <td className="text-right px-4">
@@ -178,12 +224,12 @@ export function LiquidacionPreviewDialog({
                                         </td>
                                     </tr>
                                 ))}
-                                <tr className="border-t-2 border-primary font-bold">
+                                <tr className="border-t-2 border-gray-500 font-bold">
                                     <td className="py-2">Subtotales</td>
                                     <td className="text-right px-4">
                                         {formatNumber(liquidacion.totalRemunerativo)}
                                     </td>
-                                    <td className="text-right px-4 border-r-2 border-primary">
+                                    <td className="text-right px-4 border-r-2 border-gray-500">
                                         {formatNumber(liquidacion.totalNoRemunerativo)}
                                     </td>
                                     <td className="text-right px-4">
@@ -198,7 +244,7 @@ export function LiquidacionPreviewDialog({
                     </div>
 
                     {/* Totales Finales */}
-                    <div className="space-y-4 pt-4 border-t-2">
+                    <div className="space-y-4 pt-4 border-t-2 border-gray-500">
                         <div className="flex justify-between items-center text-xl font-semibold text-muted-foreground">
                             <span>Sueldo Bruto</span>
                             <span>
@@ -218,7 +264,7 @@ export function LiquidacionPreviewDialog({
                     </div>
                     
                     {/* Sección de Recibo */}
-                    <div className="mt-8 pt-6 border-t-2 border-primary">
+                    <div className="mt-8 pt-6 border-t-2 border-gray-500">
                         <div className="space-y-4">
                             <p className="text-lg">Recibí la suma de pesos: <span className="font-semibold">{formatAmountInWords(liquidacion.totalNeto)}</span>.</p>
                             <p className="text-lg">Por los conceptos indicados en la presente liquidación, dejando constancia de haber recibido un duplicado de este recibo.</p>
