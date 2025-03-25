@@ -5,7 +5,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    // DialogTrigger,
 } from "@/components/ui/dialog";
 import { LiquidacionForm } from "@/components/liquidacion-form";
 import { Liquidacion } from "@/contexts/LiquidacionesContext";
@@ -35,13 +34,7 @@ export function LiquidacionDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            {/* <DialogTrigger asChild>
-                {trigger || (
-                    <Button variant="outline" size="sm">
-                        Nueva Liquidación
-                    </Button>
-                )}
-            </DialogTrigger> */}
+            
             <DialogContent className="max-w-[95vw] min-w-[70vw] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
