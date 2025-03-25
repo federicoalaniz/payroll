@@ -18,9 +18,9 @@ declare module 'jspdf' {
 
 // Define UserOptions interface based on jspdf-autotable
 interface UserOptions {
-    head?: any[][];
-    body?: any[][];
-    foot?: any[][];
+    head?: string[][];
+    body?: string[][];
+    foot?: string[][];
     startY?: number | false;
     margin?: number | number[] | { top?: number; right?: number; bottom?: number; left?: number };
     theme?: 'striped' | 'grid' | 'plain';
@@ -40,18 +40,18 @@ interface UserOptions {
         rowHeight?: number;
         minCellHeight?: number;
     };
-    headStyles?: any;
-    bodyStyles?: any;
-    footStyles?: any;
-    alternateRowStyles?: any;
-    columnStyles?: any;
+    headStyles?: string;
+    bodyStyles?: string;
+    footStyles?: string;
+    alternateRowStyles?: string;
+    columnStyles?: string;
     tableWidth?: 'auto' | 'wrap' | number;
     showHead?: 'everyPage' | 'firstPage' | 'never';
     showFoot?: 'everyPage' | 'lastPage' | 'never';
-    didDrawPage?: (data: any) => void;
-    didParseCell?: (data: any) => void;
-    willDrawCell?: (data: any) => void;
-    didDrawCell?: (data: any) => void;
+    didDrawPage?: (data: string | boolean) => void;
+    didParseCell?: (data: string | boolean) => void;
+    willDrawCell?: (data: string | boolean) => void;
+    didDrawCell?: (data: string | boolean) => void;
 }
 
 interface EmployeeInfo {
@@ -66,16 +66,16 @@ interface EmployeeInfo {
     empresaDomicilio?: string;
 }
 
-const formatPeriodType = (type: string | undefined) => {
-    switch (type) {
-        case "quincena1":
-            return "- Primera Quincena";
-        case "quincena2":
-            return "- Segunda Quincena";
-        default:
-            return "";
-    }
-};
+// const formatPeriodType = (type: string | undefined) => {
+//     switch (type) {
+//         case "quincena1":
+//             return "- Primera Quincena";
+//         case "quincena2":
+//             return "- Segunda Quincena";
+//         default:
+//             return "";
+//     }
+// };
 
 // Función auxiliar para generar el contenido de una página de liquidación
 const generateLiquidacionPage = (doc: jsPDF, liquidacion: Liquidacion, employeeInfo: EmployeeInfo, pageTitle: string) => {
@@ -145,7 +145,7 @@ const generateLiquidacionPage = (doc: jsPDF, liquidacion: Liquidacion, employeeI
     // Period Info con estilo similar a la UI
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Período liquidado: ${liquidacion.periodo} ${formatPeriodType(liquidacion.periodoObj?.type)}`, margin, 90);
+    doc.text(`Período liquidado: ${liquidacion.periodo}`, margin, 90);
     doc.text(`Fecha de liquidación: ${formatDate(liquidacion.fecha)}`, pageWidth - margin, 90, { align: 'right' });
 
     // Table Header
@@ -263,7 +263,7 @@ const generateLiquidacionPage = (doc: jsPDF, liquidacion: Liquidacion, employeeI
     });
 
     // Final Totals con estilos que coincidan con la UI
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const finalY = (doc as jsPDF).lastAutoTable.finalY + 10;
     
     // Sueldo Bruto
     doc.setFontSize(11);
@@ -285,7 +285,7 @@ const generateLiquidacionPage = (doc: jsPDF, liquidacion: Liquidacion, employeeI
 
     // Receipt Section con estilos que coincidan con la UI
     // Dibujar línea divisoria
-    doc.setDrawColor(...PRIMARY_COLOR);
+    // doc.setDrawColor(...PRIMARY_COLOR);
     doc.setLineWidth(0.1);
     const receiptY = finalY + 25;
     doc.line(15, receiptY - 5, pageWidth - 15, receiptY - 5);
