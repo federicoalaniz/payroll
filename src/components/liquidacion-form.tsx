@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pin, PinOff } from "lucide-react";
 import {
     Table,
     TableHeader,
@@ -73,7 +73,7 @@ export function LiquidacionForm({
     empleadoId,
 }: LiquidacionFormProps) {
     const { empleados } = usePersonas();
-    const { addLiquidacion, updateLiquidacion } = useLiquidaciones();
+    const { addLiquidacion, updateLiquidacion, pinItem, unpinItem } = useLiquidaciones();
     const [selectedEmpleadoId, setSelectedEmpleadoId] = useState<string>(
         empleadoId || ""
     );
@@ -90,7 +90,7 @@ export function LiquidacionForm({
 
     const [rowsRemunerative, setRowsRemunerative] = useState<SalaryItem[]>([]);
     const [rowsNonRemunerative, setRowsNonRemunerative] = useState<
-        NonRemunerativeItem[]
+        NonRemunerativeItem[] | SalaryItem[]
     >([]);
     const [deductionItems, setDeductionItems] = useState<DeductionItem[]>([]);
     const [presentismoPercentage, setPresentismoPercentage] = useState("8,33");
@@ -113,8 +113,12 @@ export function LiquidacionForm({
         setFecha(new Date().toISOString().split("T")[0]);
         setBasicSalary("");
 
+        // Inicializamos con arrays vacíos, los items fijados se agregarán en el contexto
+        // cuando se llame a addLiquidacion
         setRowsRemunerative([]);
         setRowsNonRemunerative([]);
+        // Para las deducciones, usamos las deducciones por defecto del contexto
+        // en lugar de un array vacío
         setDeductionItems([]);
         setPresentismoPercentage("8,33");
     }, [empleadoId]);
@@ -914,19 +918,54 @@ export function LiquidacionForm({
                                         disabled={!row.checked}
                                     />
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() =>
-                                            removeRemunerativeItem(
-                                                Number(row.id)
-                                            )
-                                        }
-                                        className="text-red-500 hover:text-red-700"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                <TableCell className="flex justify-end">
+                                    <div className="flex space-x-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                // Obtener el empleado seleccionado para conseguir su empresaId
+                                                const empleado = empleados.find(e => e.id === selectedEmpleadoId);
+                                                if (empleado) {
+                                                    // Si el item ya está fijado, desfijarlo
+                                                    if (row.isPinned) {
+                                                        unpinItem(row.id, 'remunerative', empleado.empresaId);
+                                                        // Actualizar el estado local
+                                                        setRowsRemunerative(
+                                                            rowsRemunerative.map(r => 
+                                                                r.id === row.id ? { ...r, isPinned: false } : r
+                                                            )
+                                                        );
+                                                    } else {
+                                                        // Fijar el item
+                                                        pinItem(row, 'remunerative', empleado.empresaId);
+                                                        // Actualizar el estado local
+                                                        setRowsRemunerative(
+                                                            rowsRemunerative.map(r => 
+                                                                r.id === row.id ? { ...r, isPinned: true } : r
+                                                            )
+                                                        );
+                                                    }
+                                                }
+                                            }}
+                                            className={`${row.isPinned ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
+                                            title={row.isPinned ? "Desfijar item" : "Fijar item para futuras liquidaciones"}
+                                        >
+                                            {row.isPinned ? <PinOff className="h-4 w-4 text-red-500"/> : <Pin className="h-4 w-4 text-green-500" /> }
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() =>
+                                                removeRemunerativeItem(
+                                                    Number(row.id)
+                                                )
+                                            }
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -1048,21 +1087,56 @@ export function LiquidacionForm({
                                         }
                                     />
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="flex justify-end">
                                     {!row.isAttendanceRow &&
                                         !row.isSeniorityRow && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    removeNonRemunerativeItem(
-                                                        Number(row.id)
-                                                    )
-                                                }
-                                                className="text-red-500 hover:text-red-700"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
+                                            <div className="flex space-x-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        // Obtener el empleado seleccionado para conseguir su empresaId
+                                                        const empleado = empleados.find(e => e.id === selectedEmpleadoId);
+                                                        if (empleado) {
+                                                            // Si el item ya está fijado, desfijarlo
+                                                            if (row.isPinned) {
+                                                                unpinItem(row.id, 'nonRemunerative', empleado.empresaId);
+                                                                // Actualizar el estado local
+                                                                setRowsNonRemunerative(
+                                                                    rowsNonRemunerative.map(r => 
+                                                                        r.id === row.id ? { ...r, isPinned: false } : r
+                                                                    )
+                                                                );
+                                                            } else {
+                                                                // Fijar el item
+                                                                pinItem(row, 'nonRemunerative', empleado.empresaId);
+                                                                // Actualizar el estado local
+                                                                setRowsNonRemunerative(
+                                                                    rowsNonRemunerative.map(r => 
+                                                                        r.id === row.id ? { ...r, isPinned: true } : r
+                                                                    )
+                                                                );
+                                                            }
+                                                        }
+                                                    }}
+                                                    className={`${row.isPinned ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
+                                                    title={row.isPinned ? "Desfijar item" : "Fijar item para futuras liquidaciones"}
+                                                >
+                                                    {row.isPinned ? <PinOff className="h-4 w-4 text-red-500"/> : <Pin className="h-4 w-4 text-green-500" /> }
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        removeNonRemunerativeItem(
+                                                            Number(row.id)
+                                                        )
+                                                    }
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         )}
                                 </TableCell>
                             </TableRow>
@@ -1347,17 +1421,52 @@ export function LiquidacionForm({
                                         }
                                     />
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() =>
-                                            removeDeductionItem(Number(item.id))
-                                        }
-                                        className="text-red-500 hover:text-red-700"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                <TableCell className="flex justify-end">
+                                    <div className="flex space-x-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => {
+                                                // Obtener el empleado seleccionado para conseguir su empresaId
+                                                const empleado = empleados.find(e => e.id === selectedEmpleadoId);
+                                                if (empleado) {
+                                                    // Si el item ya está fijado, desfijarlo
+                                                    if (item.isPinned) {
+                                                        unpinItem(item.id, 'deduction', empleado.empresaId);
+                                                        // Actualizar el estado local
+                                                        setDeductionItems(
+                                                            deductionItems.map(r => 
+                                                                r.id === item.id ? { ...r, isPinned: false } : r
+                                                            )
+                                                        );
+                                                    } else {
+                                                        // Fijar el item
+                                                        pinItem(item, 'deduction', empleado.empresaId);
+                                                        // Actualizar el estado local
+                                                        setDeductionItems(
+                                                            deductionItems.map(r => 
+                                                                r.id === item.id ? { ...r, isPinned: true } : r
+                                                            )
+                                                        );
+                                                    }
+                                                }
+                                            }}
+                                            className={`${item.isPinned ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
+                                            title={item.isPinned ? "Desfijar item" : "Fijar item para futuras liquidaciones"}
+                                        >
+                                            {item.isPinned ? <PinOff className="h-4 w-4 text-red-500"/> : <Pin className="h-4 w-4 text-green-500" /> }
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() =>
+                                                removeDeductionItem(Number(item.id))
+                                            }
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}
