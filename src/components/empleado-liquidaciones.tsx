@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileEdit, Trash2, Plus, Eye } from "lucide-react";
+import { FileEdit, Trash2, Plus, Download } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -18,8 +18,9 @@ import {
     type Liquidacion,
 } from "@/contexts/LiquidacionesContext";
 import { LiquidacionDialog } from "@/components/liquidacion-dialog";
-import { LiquidacionPreviewDialog } from "@/components/liquidacion-preview-dialog";
 import { formatNumber, formatDate } from "@/lib/utils";
+import { usePersonas } from "@/contexts/PersonasContext";
+import { generateLiquidacionPDF } from "@/lib/pdf-generator";
 
 interface EmpleadoLiquidacionesProps {
     empleadoId: string;
@@ -32,12 +33,10 @@ export function EmpleadoLiquidaciones({
 }: EmpleadoLiquidacionesProps) {
     const { deleteLiquidacion, getLiquidacionesByEmpleado } =
         useLiquidaciones();
+    const { empleados, empresas } = usePersonas();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedLiquidacion, setSelectedLiquidacion] =
         useState<Liquidacion | null>(null);
-    const [previewLiquidacion, setPreviewLiquidacion] =
-        useState<Liquidacion | null>(null);
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const liquidacionesEmpleado = getLiquidacionesByEmpleado(empleadoId);
 
@@ -60,14 +59,29 @@ export function EmpleadoLiquidaciones({
         setSelectedLiquidacion(null);
     };
 
-    const handlePreviewLiquidacion = (liquidacion: Liquidacion) => {
-        setPreviewLiquidacion(liquidacion);
-        setIsPreviewOpen(true);
-    };
 
-    const handleClosePreview = () => {
-        setIsPreviewOpen(false);
-        setPreviewLiquidacion(null);
+
+    const handleDownloadPDF = async (liquidacion: Liquidacion) => {
+        
+        const empleado = empleados.find(e => e.id === liquidacion.empleadoId);
+        const empresa = empleado ? empresas.find(e => e.id === empleado.empresaId) : undefined;
+        
+        const employeeInfo = {
+            name: empleado?.nombre || '',
+            cuil: empleado?.cuil || '',
+            address: empleado?.domicilio ? `${empleado.domicilio.calle} ${empleado.domicilio.numero}, ${empleado.domicilio.localidad}, ${empleado.domicilio.provincia}` : '',
+            startDate: empleado?.fechaIngreso || '',
+            category: empleado?.categoria || '',
+            empresaNombre: empresa?.nombre || '',
+            empresaCuit: empresa?.cuit || '',
+            empresaDomicilio: empresa?.domicilio ? `${empresa.domicilio.calle} ${empresa.domicilio.numero}, ${empresa.domicilio.localidad}, ${empresa.domicilio.provincia}` : ''
+        };
+        
+        const doc = await generateLiquidacionPDF(liquidacion, employeeInfo);
+        // Convertir el PDF a blob y abrir en nueva pestaña en lugar de descargarlo
+        const pdfBlob = doc.output('blob');
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        window.open(blobUrl, '_blank');
     };
 
     return (
@@ -132,17 +146,18 @@ export function EmpleadoLiquidaciones({
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
+
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() =>
-                                                    handlePreviewLiquidacion(
+                                                    handleDownloadPDF(
                                                         liquidacion
                                                     )
                                                 }
-                                                className="text-gray-500 hover:text-gray-700"
+                                                className="text-green-500 hover:text-green-700"
                                             >
-                                                <Eye className="h-4 w-4" />
+                                                <Download className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="ghost"
@@ -186,13 +201,7 @@ export function EmpleadoLiquidaciones({
                 empleadoId={empleadoId}
             />
 
-            {previewLiquidacion && (
-                <LiquidacionPreviewDialog
-                    liquidacion={previewLiquidacion}
-                    open={isPreviewOpen}
-                    onOpenChange={handleClosePreview}
-                />
-            )}
+
         </Card>
     );
 }
