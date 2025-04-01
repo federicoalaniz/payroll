@@ -19,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const users = [
     { userId: "smguerrero", password: "1234", name: "Betty" },
     { userId: "aoalaniz", password: "1234", name: "Orlando" },
+    { userId: "falaniz", password: "Gifedeagos.00", name: "Federico" },
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({

@@ -40,6 +40,13 @@ import { toast } from "sonner";
 const formatNumber = (value: string) => {
     if (!value) return "";
 
+    // Verificar si el valor es negativo
+    const isNegative = value.startsWith('-');
+    // Eliminar el signo negativo para procesar el número
+    if (isNegative) {
+        value = value.substring(1);
+    }
+
     // Elimina cualquier carácter no numérico excepto la coma
     value = value.replace(/[^0-9,]/g, "");
 
@@ -57,8 +64,8 @@ const formatNumber = (value: string) => {
         decimal = decimal.length === 1 ? `${decimal}0` : decimal.slice(0, 2);
     }
 
-    // Retorna la parte entera con los decimales formateados
-    return `${integer},${decimal}`;
+    // Retorna la parte entera con los decimales formateados, añadiendo el signo negativo si corresponde
+    return `${isNegative ? '-' : ''}${integer},${decimal}`;
 };
 
 interface LiquidacionFormProps {
@@ -66,6 +73,16 @@ interface LiquidacionFormProps {
     onSubmitSuccess: () => void;
     empleadoId?: string;
 }
+
+// Función para capitalizar la primera letra de cada palabra
+const capitalizeWords = (text: string): string => {
+    if (!text) return "";
+    return text
+        .toLowerCase()
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+};
 
 export function LiquidacionForm({
     liquidacionToEdit,
@@ -261,14 +278,30 @@ export function LiquidacionForm({
     const handleBasicSalaryChange = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
-        const value = e.target.value
-            .replace(/[^0-9,]/g, "")
-            .replace(/,(?=.*,)/g, "");
-        setBasicSalary(value);
+        // Preservar el signo negativo al principio, pero eliminar otros caracteres no válidos
+        const value = e.target.value;
+        const isNegative = value.startsWith('-');
+        let processedValue = value.replace(/[^0-9,-]/g, "").replace(/,(?=.*,)/g, "");
+        
+        // Asegurar que el signo negativo solo aparezca al principio
+        processedValue = processedValue.replace(/-/g, "");
+        if (isNegative) {
+            processedValue = '-' + processedValue;
+        }
+        
+        setBasicSalary(processedValue);
     };
 
     const handlePercentageChange = (id: number, value: string) => {
-        value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
+        // Para porcentajes, permitimos valores negativos también
+        const isNegative = value.startsWith('-');
+        value = value.replace(/[^0-9,-]/g, "").replace(/,(?=.*,)/g, "");
+        
+        // Asegurar que el signo negativo solo aparezca al principio
+        value = value.replace(/-/g, "");
+        if (isNegative) {
+            value = '-' + value;
+        }
         setRowsRemunerative(
             rowsRemunerative.map((row) =>
                 row.id === id.toString()
@@ -288,7 +321,15 @@ export function LiquidacionForm({
         id: number,
         value: string
     ) => {
-        value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
+        // Para porcentajes, permitimos valores negativos también
+        const isNegative = value.startsWith('-');
+        value = value.replace(/[^0-9,-]/g, "").replace(/,(?=.*,)/g, "");
+        
+        // Asegurar que el signo negativo solo aparezca al principio
+        value = value.replace(/-/g, "");
+        if (isNegative) {
+            value = '-' + value;
+        }
         setRowsNonRemunerative(
             rowsNonRemunerative.map((row) => {
                 if (row.id === id.toString()) {
@@ -311,7 +352,16 @@ export function LiquidacionForm({
     };
 
     const handleAmountChange = (id: number, value: string) => {
-        value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
+        // Preservar el signo negativo al principio, pero eliminar otros caracteres no válidos
+        const isNegative = value.startsWith('-');
+        value = value.replace(/[^0-9,-]/g, "").replace(/,(?=.*,)/g, "");
+        
+        // Asegurar que el signo negativo solo aparezca al principio
+        value = value.replace(/-/g, "");
+        if (isNegative) {
+            value = '-' + value;
+        }
+        
         setRowsRemunerative(
             rowsRemunerative.map((row) =>
                 row.id === id.toString() ? { ...row, amount: value } : row
@@ -320,7 +370,15 @@ export function LiquidacionForm({
     };
 
     const handleNonRemunerativeAmountChange = (id: number, value: string) => {
-        value = value.replace(/[^0-9,]/g, "").replace(/,(?=.*,)/g, "");
+        // Preservar el signo negativo al principio, pero eliminar otros caracteres no válidos
+        const isNegative = value.startsWith('-');
+        value = value.replace(/[^0-9,-]/g, "").replace(/,(?=.*,)/g, "");
+        
+        // Asegurar que el signo negativo solo aparezca al principio
+        value = value.replace(/-/g, "");
+        if (isNegative) {
+            value = '-' + value;
+        }
 
         // Primera pasada: calcular el monto de antigüedad
         const tempRows = rowsNonRemunerative.map((row) => {
@@ -411,7 +469,7 @@ export function LiquidacionForm({
     ) => {
         if (!baseAmount || !percentage) return "";
 
-        // Convertir valores a números removiendo separadores
+        // Convertir valores a números removiendo separadores pero preservando el signo negativo
         const base = Number.parseFloat(
             baseAmount.replace(/\./g, "").replace(",", ".")
         );
@@ -446,8 +504,8 @@ export function LiquidacionForm({
     const calculateYearsOfService = () => {
         if (!empleadoSeleccionado?.fechaIngreso) return 0;
         const start = new Date(empleadoSeleccionado.fechaIngreso);
-        const today = new Date();
-        const diffTime = Math.abs(today.getTime() - start.getTime());
+        const liquidacionDate = new Date(fecha);
+        const diffTime = Math.abs(liquidacionDate.getTime() - start.getTime());
         const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365.25));
         return diffYears;
     };
@@ -485,8 +543,17 @@ export function LiquidacionForm({
     };
 
     const calculateTotalRemunerative = () => {
-        const formatToNumber = (value: string) =>
-            Number.parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+        const formatToNumber = (value: string) => {
+            if (!value) return 0;
+            // Verificar si el valor es negativo
+            const isNegative = value.startsWith('-');
+            // Eliminar el signo negativo para procesar el número
+            const processedValue = isNegative ? value.substring(1) : value;
+            // Convertir a número preservando el signo
+            const number = Number.parseFloat(processedValue.replace(/\./g, "").replace(",", ".")) || 0;
+            // Devolver el número con el signo correcto
+            return isNegative ? -number : number;
+        };
 
         const salary = formatToNumber(basicSalary);
         const seniorityAmount = formatToNumber(calculateSeniorityAmount());
@@ -494,10 +561,8 @@ export function LiquidacionForm({
             calculateAmount(presentismoPercentage, basicSalary, true)
         );
         const totalRemunerative = rowsRemunerative.reduce((total, row) => {
-            if (row.checked) {
-                return total + formatToNumber(row.amount);
-            }
-            return total;
+            // Incluir todos los ítems remunerativos, independientemente de si están marcados o no
+            return total + formatToNumber(row.amount);
         }, 0);
 
         return (salary + seniorityAmount + attendanceAmount + totalRemunerative)
@@ -507,8 +572,17 @@ export function LiquidacionForm({
     };
 
     const calculateTotalNonRemunerative = () => {
-        const formatToNumber = (value: string) =>
-            Number.parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+        const formatToNumber = (value: string) => {
+            if (!value) return 0;
+            // Verificar si el valor es negativo
+            const isNegative = value.startsWith('-');
+            // Eliminar el signo negativo para procesar el número
+            const processedValue = isNegative ? value.substring(1) : value;
+            // Convertir a número preservando el signo
+            const number = Number.parseFloat(processedValue.replace(/\./g, "").replace(",", ".")) || 0;
+            // Devolver el número con el signo correcto
+            return isNegative ? -number : number;
+        };
 
         const total = rowsNonRemunerative.reduce((total, row) => {
             return total + formatToNumber(row.amount);
@@ -521,16 +595,28 @@ export function LiquidacionForm({
     };
 
     const calculateDeductionTotals = () => {
-        const formatToNumber = (value: string) =>
-            Number.parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+        const formatToNumber = (value: string) => {
+            if (!value) return 0;
+            // Verificar si el valor es negativo
+            const isNegative = value.startsWith('-');
+            // Eliminar el signo negativo para procesar el número
+            const processedValue = isNegative ? value.substring(1) : value;
+            // Convertir a número preservando el signo
+            const number = Number.parseFloat(processedValue.replace(/\./g, "").replace(",", ".")) || 0;
+            // Devolver el número con el signo correcto
+            return isNegative ? -number : number;
+        };
 
         const totalRemunerative = deductionItems.reduce((total, item) => {
             if (item.checkedRemunerative) {
                 const baseAmount = formatToNumber(calculateTotalRemunerative());
                 const percentage = formatToNumber(item.percentage);
                 return total + (baseAmount * percentage) / 100;
+            } else if (item.remunerativeAmount !== undefined && item.remunerativeAmount !== "") {
+                // Si hay un monto fijo remunerativo, sumarlo
+                return total + formatToNumber(item.remunerativeAmount);
             }
-            return total + formatToNumber(item.remunerativeAmount);
+            return total;
         }, 0);
 
         const totalNonRemunerative = deductionItems.reduce((total, item) => {
@@ -540,8 +626,11 @@ export function LiquidacionForm({
                 );
                 const percentage = formatToNumber(item.percentage);
                 return total + (baseAmount * percentage) / 100;
+            } else if (item.nonRemunerativeAmount !== undefined && item.nonRemunerativeAmount !== "") {
+                // Si hay un monto fijo no remunerativo, sumarlo
+                return total + formatToNumber(item.nonRemunerativeAmount);
             }
-            return total + formatToNumber(item.nonRemunerativeAmount);
+            return total;
         }, 0);
 
         const formatTotal = (value: number) =>
@@ -558,8 +647,17 @@ export function LiquidacionForm({
     };
 
     const calculateTotalNeto = () => {
-        const formatToNumber = (value: string) =>
-            Number.parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+        const formatToNumber = (value: string) => {
+            if (!value) return 0;
+            // Verificar si el valor es negativo
+            const isNegative = value.startsWith('-');
+            // Eliminar el signo negativo para procesar el número
+            const processedValue = isNegative ? value.substring(1) : value;
+            // Convertir a número preservando el signo
+            const number = Number.parseFloat(processedValue.replace(/\./g, "").replace(",", ".")) || 0;
+            // Devolver el número con el signo correcto
+            return isNegative ? -number : number;
+        };
 
         const totalBruto =
             formatToNumber(calculateTotalRemunerative()) +
@@ -891,6 +989,18 @@ export function LiquidacionForm({
                                                 )
                                             )
                                         }
+                                        onBlur={(e) =>
+                                            setRowsRemunerative(
+                                                rowsRemunerative.map((r) =>
+                                                    r.id === row.id
+                                                        ? {
+                                                            ...r,
+                                                            name: capitalizeWords(e.target.value),
+                                                        }
+                                                        : r
+                                                )
+                                            )
+                                        }
                                     />
                                 </TableCell>
                                 <TableCell>
@@ -1041,6 +1151,19 @@ export function LiquidacionForm({
                                                                 ...r,
                                                                 name: e.target
                                                                     .value,
+                                                            }
+                                                            : r
+                                                    )
+                                                )
+                                            }
+                                            onBlur={(e) => 
+                                                !row.isSeniorityRow && !row.isAttendanceRow && 
+                                                setRowsNonRemunerative(
+                                                    rowsNonRemunerative.map((r) =>
+                                                        r.id === row.id
+                                                            ? {
+                                                                ...r,
+                                                                name: capitalizeWords(e.target.value),
                                                             }
                                                             : r
                                                     )
@@ -1219,6 +1342,18 @@ export function LiquidacionForm({
                                                             ...r,
                                                             name: e.target
                                                                 .value,
+                                                        }
+                                                        : r
+                                                )
+                                            )
+                                        }
+                                        onBlur={(e) =>
+                                            setDeductionItems(
+                                                deductionItems.map((r) =>
+                                                    r.id === item.id
+                                                        ? {
+                                                            ...r,
+                                                            name: capitalizeWords(e.target.value),
                                                         }
                                                         : r
                                                 )
@@ -1628,7 +1763,7 @@ export function LiquidacionForm({
                                                     .toFixed(2)
                                                     .replace(".", ",")
                                             )}`
-                                            : `-`}
+                                            : item.remunerativeAmount ? formatNumber(item.remunerativeAmount) : `-`}
                                     </td>
                                     <td className="text-right px-4">
                                         {item.checkedNonRemunerative

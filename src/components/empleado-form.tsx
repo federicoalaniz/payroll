@@ -26,6 +26,8 @@ import { ProvinceSelect } from "@/lib/provinces"
 import { FotoUpload } from "./foto-upload"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { v4 as uuidv4 } from "uuid"
+// import { v4 as uuidv4 } from "uuid"
 import { formatCUITCUIL } from "@/lib/input-masks"
 import { fetchLocalitiesByProvince } from "@/lib/locality-service"
 
@@ -134,7 +136,7 @@ export function EmpleadoForm({ empleadoToEdit, onSuccess }: EmpleadoFormProps) {
         await updateEmpleado({ ...values, id: empleadoToEdit.id })
         toast("Empleado actualizado exitosamente")
       } else {
-        await addEmpleado({ ...values, id: crypto.randomUUID() })
+        await addEmpleado({ ...values, id: uuidv4() })
         toast("Empleado creado exitosamente")
       }
       onSuccess?.()

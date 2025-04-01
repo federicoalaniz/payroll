@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Liquidacion } from "@/contexts/LiquidacionesContext";
-import { formatDate, formatNumber, formatAmountInWords } from "@/lib/utils";
+import { formatDate, formatNumber, formatAmountInWords, calculateAmount } from "@/lib/utils";
 
 // Definir colores
 const PRIMARY_COLOR: [number, number, number] = [0, 0, 0]; // Negro para bordes y texto principal
@@ -245,12 +245,16 @@ const generateLiquidacionPage = (
             item.name,
             "-",
             "-",
-            item.remunerativeAmount &&
-            parseFloat(item.remunerativeAmount.replace(",", ".")) > 0
+            // Mostrar el valor remunerativo si está marcado como remunerativo o si tiene un valor fijo
+            item.checkedRemunerative
+                ? formatNumber(item.remunerativeAmount || calculateAmount(item.percentage, liquidacion.totalRemunerativo) || "0")
+                : item.remunerativeAmount && item.remunerativeAmount !== ""
                 ? formatNumber(item.remunerativeAmount)
                 : "-",
-            item.nonRemunerativeAmount &&
-            parseFloat(item.nonRemunerativeAmount.replace(",", ".")) > 0
+            // Mostrar el valor no remunerativo si está marcado como no remunerativo o si tiene un valor fijo
+            item.checkedNonRemunerative
+                ? formatNumber(item.nonRemunerativeAmount || calculateAmount(item.percentage, liquidacion.totalNoRemunerativo) || "0")
+                : item.nonRemunerativeAmount && item.nonRemunerativeAmount !== ""
                 ? formatNumber(item.nonRemunerativeAmount)
                 : "-",
         ]),
