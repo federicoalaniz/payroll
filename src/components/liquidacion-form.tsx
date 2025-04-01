@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Pin, PinOff } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import {
     Table,
     TableHeader,
@@ -73,7 +73,7 @@ export function LiquidacionForm({
     empleadoId,
 }: LiquidacionFormProps) {
     const { empleados } = usePersonas();
-    const { addLiquidacion, updateLiquidacion, pinItem, unpinItem } = useLiquidaciones();
+    const { addLiquidacion, updateLiquidacion, defaultDeductions } = useLiquidaciones();
     const [selectedEmpleadoId, setSelectedEmpleadoId] = useState<string>(
         empleadoId || ""
     );
@@ -118,10 +118,10 @@ export function LiquidacionForm({
         setRowsRemunerative([]);
         setRowsNonRemunerative([]);
         // Para las deducciones, usamos las deducciones por defecto del contexto
-        // en lugar de un array vacío
-        setDeductionItems([]);
+        // Hacemos una copia profunda para evitar modificar el original
+        setDeductionItems(JSON.parse(JSON.stringify(defaultDeductions)));
         setPresentismoPercentage("8,33");
-    }, [empleadoId]);
+    }, [empleadoId, defaultDeductions]);
 
     useEffect(() => {
         if (liquidacionToEdit) {
@@ -144,7 +144,23 @@ export function LiquidacionForm({
 
             setRowsRemunerative(liquidacionToEdit.rowsRemunerative);
             setRowsNonRemunerative(liquidacionToEdit.rowsNonRemunerative);
-            setDeductionItems(liquidacionToEdit.deductionItems);
+            
+            // Asegurar que las deducciones fijas estén presentes y con los valores correctos
+            // Filtrar las deducciones personalizadas (las que no tienen IDs del 1 al 4)
+            const customDeductions = liquidacionToEdit.deductionItems.filter(item => 
+                !['1', '2', '3', '4'].includes(item.id)
+            );
+            
+            // Obtener las deducciones fijas del contexto
+            const fixedDeductions = defaultDeductions.map(item => {
+                // Buscar si existe la deducción fija en la liquidación para mantener sus valores
+                const existingItem = liquidacionToEdit.deductionItems.find(d => d.id === item.id);
+                return existingItem || item;
+            });
+            
+            // Combinar las deducciones fijas con las personalizadas
+            setDeductionItems([...fixedDeductions, ...customDeductions]);
+            
             setPresentismoPercentage(liquidacionToEdit.presentismoPercentage);
         } else {
             resetForm();
@@ -152,7 +168,7 @@ export function LiquidacionForm({
                 setSelectedEmpleadoId(empleadoId);
             }
         }
-    }, [liquidacionToEdit, empleadoId, resetForm]);
+    }, [liquidacionToEdit, empleadoId, defaultDeductions,resetForm]);
     const addRemunerativeItem = () => {
         setRowsRemunerative([
             ...rowsRemunerative,
@@ -178,6 +194,8 @@ export function LiquidacionForm({
                 amount: "",
                 checked: false,
                 isRemunerative: false,
+                showSeniority: true,
+                showAttendance: true,
             },
             // Fila de Antigüedad
             {
@@ -236,6 +254,7 @@ export function LiquidacionForm({
     };
 
     const removeDeductionItem = (id: number) => {
+        // Permitir eliminar cualquier deducción, incluso las fijas
         setDeductionItems(deductionItems.filter((item) => item.id !== id.toString()));
     };
 
@@ -920,39 +939,7 @@ export function LiquidacionForm({
                                 </TableCell>
                                 <TableCell className="flex justify-end">
                                     <div className="flex space-x-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => {
-                                                // Obtener el empleado seleccionado para conseguir su empresaId
-                                                const empleado = empleados.find(e => e.id === selectedEmpleadoId);
-                                                if (empleado) {
-                                                    // Si el item ya está fijado, desfijarlo
-                                                    if (row.isPinned) {
-                                                        unpinItem(row.id, 'remunerative', empleado.empresaId);
-                                                        // Actualizar el estado local
-                                                        setRowsRemunerative(
-                                                            rowsRemunerative.map(r => 
-                                                                r.id === row.id ? { ...r, isPinned: false } : r
-                                                            )
-                                                        );
-                                                    } else {
-                                                        // Fijar el item
-                                                        pinItem(row, 'remunerative', empleado.empresaId);
-                                                        // Actualizar el estado local
-                                                        setRowsRemunerative(
-                                                            rowsRemunerative.map(r => 
-                                                                r.id === row.id ? { ...r, isPinned: true } : r
-                                                            )
-                                                        );
-                                                    }
-                                                }
-                                            }}
-                                            className={`${row.isPinned ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
-                                            title={row.isPinned ? "Desfijar item" : "Fijar item para futuras liquidaciones"}
-                                        >
-                                            {row.isPinned ? <PinOff className="h-4 w-4 text-red-500"/> : <Pin className="h-4 w-4 text-green-500" /> }
-                                        </Button>
+
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -1008,139 +995,167 @@ export function LiquidacionForm({
                             <TableHead className="w-[150px] text-right">
                                 Valor %
                             </TableHead>
+                            <TableHead className="w-[150px] text-center">
+                                Calcular
+                            </TableHead>
                             <TableHead className="text-right">
                                 Acciones
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {rowsNonRemunerative.map((row) => (
-                            <TableRow
-                                key={row.id}
-                                className={
-                                    row.isAttendanceRow || row.isSeniorityRow
-                                        ? "bg-muted/50"
-                                        : ""
-                                }
-                            >
-                                <TableCell>
-                                    <Input
-                                        value={
-                                            row.isSeniorityRow
-                                                ? `Antigüedad 1% - ${calculateYearsOfService()} años`
-                                                : row.name
-                                        }
-                                        onChange={(e) =>
-                                            setRowsNonRemunerative(
-                                                rowsNonRemunerative.map((r) =>
-                                                    r.id === row.id
-                                                        ? {
-                                                            ...r,
-                                                            name: e.target
-                                                                .value,
-                                                        }
-                                                        : r
-                                                )
-                                            )
-                                        }
-                                        readOnly={
-                                            row.isAttendanceRow ||
-                                            row.isSeniorityRow
-                                        }
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <Input
-                                        value={row.amount}
-                                        onChange={(e) =>
-                                            handleNonRemunerativeAmountChange(
-                                                Number(row.id),
-                                                e.target.value
-                                            )
-                                        }
-                                        onBlur={(e) =>
-                                            handleNonRemunerativeAmountBlur(
-                                                Number(row.id),
-                                                e.target.value
-                                            )
-                                        }
-                                        readOnly={
-                                            row.isAttendanceRow ||
-                                            row.isSeniorityRow
-                                        }
-                                        className="text-end"
-                                    />
-                                </TableCell>
-                                <TableCell>
-                                    <Input
-                                        value={row.percentage}
-                                        className="text-right"
-                                        onChange={(e) =>
-                                            handleNonRemunerativePercentageChange(
-                                                Number(row.id),
-                                                e.target.value
-                                            )
-                                        }
-                                        readOnly={
-                                            !row.isAttendanceRow &&
-                                            !row.isSeniorityRow
-                                        }
-                                    />
-                                </TableCell>
-                                <TableCell className="flex justify-end">
-                                    {!row.isAttendanceRow &&
-                                        !row.isSeniorityRow && (
-                                            <div className="flex space-x-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => {
-                                                        // Obtener el empleado seleccionado para conseguir su empresaId
-                                                        const empleado = empleados.find(e => e.id === selectedEmpleadoId);
-                                                        if (empleado) {
-                                                            // Si el item ya está fijado, desfijarlo
-                                                            if (row.isPinned) {
-                                                                unpinItem(row.id, 'nonRemunerative', empleado.empresaId);
-                                                                // Actualizar el estado local
-                                                                setRowsNonRemunerative(
-                                                                    rowsNonRemunerative.map(r => 
-                                                                        r.id === row.id ? { ...r, isPinned: false } : r
-                                                                    )
-                                                                );
-                                                            } else {
-                                                                // Fijar el item
-                                                                pinItem(row, 'nonRemunerative', empleado.empresaId);
-                                                                // Actualizar el estado local
-                                                                setRowsNonRemunerative(
-                                                                    rowsNonRemunerative.map(r => 
-                                                                        r.id === row.id ? { ...r, isPinned: true } : r
-                                                                    )
-                                                                );
+                        {rowsNonRemunerative.map((row) => {
+                            // Solo mostrar filas de antigüedad si showSeniority está activo
+                            if (row.isSeniorityRow) {
+                                const parentRow = rowsNonRemunerative.find(r => r.id === row.referenceItemId);
+                                if (!parentRow?.showSeniority) return null;
+                            }
+                            
+                            // Solo mostrar filas de presentismo si showAttendance está activo
+                            if (row.isAttendanceRow) {
+                                const parentRow = rowsNonRemunerative.find(r => r.id === row.referenceItemId);
+                                if (!parentRow?.showAttendance) return null;
+                            }
+                            
+                            return (
+                                <TableRow
+                                    key={row.id}
+                                    className={
+                                        row.isAttendanceRow || row.isSeniorityRow
+                                            ? "bg-muted/50"
+                                            : ""
+                                    }
+                                >
+                                    <TableCell>
+                                        <Input
+                                            value={
+                                                row.isSeniorityRow
+                                                    ? `Antigüedad 1% - ${calculateYearsOfService()} años`
+                                                    : row.name
+                                            }
+                                            onChange={(e) =>
+                                                setRowsNonRemunerative(
+                                                    rowsNonRemunerative.map((r) =>
+                                                        r.id === row.id
+                                                            ? {
+                                                                ...r,
+                                                                name: e.target
+                                                                    .value,
                                                             }
-                                                        }
-                                                    }}
-                                                    className={`${row.isPinned ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
-                                                    title={row.isPinned ? "Desfijar item" : "Fijar item para futuras liquidaciones"}
-                                                >
-                                                    {row.isPinned ? <PinOff className="h-4 w-4 text-red-500"/> : <Pin className="h-4 w-4 text-green-500" /> }
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        removeNonRemunerativeItem(
-                                                            Number(row.id)
-                                                        )
-                                                    }
-                                                    className="text-red-500 hover:text-red-700"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                            : r
+                                                    )
+                                                )
+                                            }
+                                            readOnly={
+                                                row.isAttendanceRow ||
+                                                row.isSeniorityRow
+                                            }
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input
+                                            value={row.amount}
+                                            onChange={(e) =>
+                                                handleNonRemunerativeAmountChange(
+                                                    Number(row.id),
+                                                    e.target.value
+                                                )
+                                            }
+                                            onBlur={(e) =>
+                                                handleNonRemunerativeAmountBlur(
+                                                    Number(row.id),
+                                                    e.target.value
+                                                )
+                                            }
+                                            readOnly={
+                                                row.isAttendanceRow ||
+                                                row.isSeniorityRow
+                                            }
+                                            className="text-end"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input
+                                            value={row.percentage}
+                                            className="text-right"
+                                            onChange={(e) =>
+                                                handleNonRemunerativePercentageChange(
+                                                    Number(row.id),
+                                                    e.target.value
+                                                )
+                                            }
+                                            readOnly={
+                                                !row.isAttendanceRow &&
+                                                !row.isSeniorityRow
+                                            }
+                                        />
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        {!row.isAttendanceRow && !row.isSeniorityRow && (
+                                            <div className="flex justify-center space-x-4">
+                                                <div className="flex items-center space-x-1">
+                                                    <Checkbox
+                                                        id={`seniority-${row.id}`}
+                                                        checked={row.showSeniority}
+                                                        onCheckedChange={(checked) => {
+                                                            setRowsNonRemunerative(
+                                                                rowsNonRemunerative.map((r) =>
+                                                                    r.id === row.id
+                                                                        ? {
+                                                                            ...r,
+                                                                            showSeniority: !!checked,
+                                                                        }
+                                                                        : r
+                                                                )
+                                                            );
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`seniority-${row.id}`} className="text-xs">A</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-1">
+                                                    <Checkbox
+                                                        id={`attendance-${row.id}`}
+                                                        checked={row.showAttendance}
+                                                        onCheckedChange={(checked) => {
+                                                            setRowsNonRemunerative(
+                                                                rowsNonRemunerative.map((r) =>
+                                                                    r.id === row.id
+                                                                        ? {
+                                                                            ...r,
+                                                                            showAttendance: !!checked,
+                                                                        }
+                                                                        : r
+                                                                )
+                                                            );
+                                                        }}
+                                                    />
+                                                    <Label htmlFor={`attendance-${row.id}`} className="text-xs">P</Label>
+                                                </div>
                                             </div>
                                         )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                    </TableCell>
+                                    <TableCell className="flex justify-end">
+                                        {!row.isAttendanceRow &&
+                                            !row.isSeniorityRow && (
+                                                <div className="flex space-x-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            removeNonRemunerativeItem(
+                                                                Number(row.id)
+                                                            )
+                                                        }
+                                                        className="text-red-500 hover:text-red-700"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                     <TableFooter>
                         <TableRow className="font-semibold text-base">
@@ -1371,6 +1386,7 @@ export function LiquidacionForm({
                                                         )
                                                     )
                                                 }
+                                                disabled={false}
                                             />
                                         </div>
                                         <div className="flex items-center gap-1">
@@ -1393,6 +1409,7 @@ export function LiquidacionForm({
                                                         )
                                                     )
                                                 }
+                                                disabled={false}
                                             />
                                         </div>
                                     </div>
@@ -1423,49 +1440,18 @@ export function LiquidacionForm({
                                 </TableCell>
                                 <TableCell className="flex justify-end">
                                     <div className="flex space-x-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => {
-                                                // Obtener el empleado seleccionado para conseguir su empresaId
-                                                const empleado = empleados.find(e => e.id === selectedEmpleadoId);
-                                                if (empleado) {
-                                                    // Si el item ya está fijado, desfijarlo
-                                                    if (item.isPinned) {
-                                                        unpinItem(item.id, 'deduction', empleado.empresaId);
-                                                        // Actualizar el estado local
-                                                        setDeductionItems(
-                                                            deductionItems.map(r => 
-                                                                r.id === item.id ? { ...r, isPinned: false } : r
-                                                            )
-                                                        );
-                                                    } else {
-                                                        // Fijar el item
-                                                        pinItem(item, 'deduction', empleado.empresaId);
-                                                        // Actualizar el estado local
-                                                        setDeductionItems(
-                                                            deductionItems.map(r => 
-                                                                r.id === item.id ? { ...r, isPinned: true } : r
-                                                            )
-                                                        );
-                                                    }
+                                        {(
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    removeDeductionItem(Number(item.id))
                                                 }
-                                            }}
-                                            className={`${item.isPinned ? 'text-primary' : 'text-muted-foreground'} hover:text-primary`}
-                                            title={item.isPinned ? "Desfijar item" : "Fijar item para futuras liquidaciones"}
-                                        >
-                                            {item.isPinned ? <PinOff className="h-4 w-4 text-red-500"/> : <Pin className="h-4 w-4 text-green-500" /> }
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() =>
-                                                removeDeductionItem(Number(item.id))
-                                            }
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                                className="text-red-500 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 </TableCell>
                             </TableRow>
