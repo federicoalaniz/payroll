@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { usePersonas, type Empresa } from "@/contexts/PersonasContext"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import crypto from "crypto"
+import { v4 as uuidv4 } from "uuid"
 import { formatCUITCUIL } from "@/lib/input-masks"
 import { ProvinceSelect } from "@/lib/provinces"
 import { localities } from "@/lib/localities"
@@ -20,7 +20,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 const formSchema = z.object({
   nombre: z.string().min(1, { message: "El nombre es requerido" }),
   razonSocial: z.string().min(1, { message: "La razón social es requerida" }),
-  cuit: z.string().min(1, { message: "El CUIT es requerido" }),
+  cuit: z.string()
+    .min(1, { message: "El CUIT es requerido" })
+    .regex(/^\d{2}-\d{8}-\d{1}$/, { message: "El formato del CUIT debe ser XX-XXXXXXXX-X" }),
   telefono: z.string().min(1, { message: "El teléfono es requerido" }),
   email: z.string().email({ message: "Email inválido" }).optional(),
   domicilio: z.object({
@@ -71,19 +73,30 @@ export function EmpresaForm({ empresaToEdit, onSuccess }: EmpresaFormProps) {
     }
   }, [empresaToEdit, form])
 
-  async function onSubmit(values: EmpresaFormValues) {
+  function onSubmit(values: EmpresaFormValues) {
     setIsSubmitting(true)
     try {
+      // Validar el formato del CUIT antes de guardar
+      const cuitRegex = /^\d{2}-\d{8}-\d{1}$/;
+      if (!cuitRegex.test(values.cuit)) {
+        toast("El formato del CUIT es inválido", {
+          style: { background: "red", color: "white" }
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       if (empresaToEdit) {
-        await updateEmpresa({ ...values, id: empresaToEdit.id })
+        updateEmpresa({ ...values, id: empresaToEdit.id })
         toast("Empresa actualizada exitosamente")
       } else {
-        await addEmpresa({ ...values, id: crypto.randomUUID() })
+        addEmpresa({ ...values, id: uuidv4() })
         toast("Empresa creada exitosamente")
       }
       onSuccess?.()
       form.reset()
-    } catch {
+    } catch (error) {
+      console.error("Error al guardar la empresa:", error)
       toast("Error al guardar la empresa", {
         style: { background: "red", color: "white" }
       })
@@ -299,7 +312,7 @@ export function EmpresaForm({ empresaToEdit, onSuccess }: EmpresaFormProps) {
                           {form.watch("domicilio.provincia") &&
                             localities[form.watch("domicilio.provincia")].map(
                               (locality) => (
-                                <SelectItem key={locality} value={`${locality}|${locality}`}>
+                                <SelectItem key={locality} value={locality}>
                                   {locality}
                                 </SelectItem>
                               )

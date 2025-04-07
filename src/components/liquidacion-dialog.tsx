@@ -51,7 +51,7 @@ export function LiquidacionDialog({
                     </Button>
                 )}
             </DialogTrigger> */}
-            <DialogContent className="max-w-[95vw] min-w-[70vw] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-[95vw] min-w-[95vw] lg:min-w-[70vw]  max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>

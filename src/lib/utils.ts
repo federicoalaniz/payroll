@@ -62,11 +62,20 @@ export const calculateDeductionTotals = (items: DeductionItem[], totalRemunerati
       const base = parseFloat(totalRemunerativo.replace(/\./g, "").replace(",", "."));
       const percentage = parseFloat(item.percentage.replace(",", "."));
       remunerative += (base * percentage) / 100;
+    } else if (item.remunerativeAmount && item.remunerativeAmount !== "") {
+      // Sumar montos fijos remunerativos
+      const amount = parseFloat(item.remunerativeAmount.replace(/\./g, "").replace(",", "."));
+      remunerative += amount;
     }
+    
     if (item.checkedNonRemunerative) {
       const base = parseFloat(totalNoRemunerativo.replace(/\./g, "").replace(",", "."));
       const percentage = parseFloat(item.percentage.replace(",", "."));
       nonRemunerative += (base * percentage) / 100;
+    } else if (item.nonRemunerativeAmount && item.nonRemunerativeAmount !== "") {
+      // Sumar montos fijos no remunerativos
+      const amount = parseFloat(item.nonRemunerativeAmount.replace(/\./g, "").replace(",", "."));
+      nonRemunerative += amount;
     }
   });
 
