@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserProfile } from "@/contexts/UserProfileContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,7 @@ import {
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const { user, logout } = useAuth();
+    const { userProfile } = useUserProfile();
     const router = useRouter();
 
     const [theme, setTheme] = useState<"light" | "dark">(() => {
@@ -77,6 +79,9 @@ export default function Navbar() {
         logout();
         router.push("/login");
     };
+
+    // Determinar la imagen de perfil a mostrar
+    const profileImage = userProfile?.photo || "/default-avatar.png";
 
     return (
         <nav className="sticky top-0 z-50 border-b">
@@ -343,7 +348,7 @@ export default function Navbar() {
                                 >
                                     <Avatar className="h-8 w-8">
                                         <AvatarImage
-                                            src="/placeholder.svg"
+                                            src={profileImage}
                                             alt={user.name}
                                         />
                                         <AvatarFallback>
@@ -370,8 +375,10 @@ export default function Navbar() {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                     <DropdownMenuItem>
-                                        <User className="mr-2 h-4 w-4" />
-                                        <span>Perfil</span>
+                                        <Link href="/perfil" className="flex items-center w-full">
+                                            <User className="mr-2 h-4 w-4" />
+                                            <span>Perfil</span>
+                                        </Link>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <Settings className="mr-2 h-4 w-4" />

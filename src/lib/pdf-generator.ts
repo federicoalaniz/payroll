@@ -239,7 +239,6 @@ const generateLiquidacionPage = (
             "-",
         ]),
         ...liquidacion.rowsNonRemunerative
-            .filter((row) => !row.isAttendanceRow && !row.isSeniorityRow)
             .map((row) => [row.name, "-", formatNumber(row.amount), "-", "-"]),
         ...liquidacion.deductionItems.map((item) => [
             item.name,
