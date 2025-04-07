@@ -75,10 +75,13 @@ export const UserProfileProvider: React.FC<{ children: React.ReactNode }> = ({
         // En un entorno real, nunca manejes contraseñas en el cliente
         
         // Simulamos verificación de contraseña actual
+
         const isCurrentPasswordValid = true; // Simulado
         
         if (isCurrentPasswordValid) {
             // Simulamos actualización exitosa
+            currentPassword = newPassword;
+            localStorage.setItem(`profile_${user?.userId}`, JSON.stringify(userProfile));
             return true;
         }
         return false;
