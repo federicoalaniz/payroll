@@ -5,7 +5,6 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import { LiquidacionesProvider } from "@/contexts/LiquidacionesContext"
 import { Providers } from "@/components/providers"
-import { PopulateSampleData } from "@/scripts/populate-sample-data"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -25,7 +24,6 @@ export default function RootLayout({
         <Providers>
           <LiquidacionesProvider>
             {children}
-            <PopulateSampleData />
             <Toaster richColors position="top-right" />
           </LiquidacionesProvider>
         </Providers>
