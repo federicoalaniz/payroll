@@ -32,6 +32,11 @@ export interface Empleado {
     email?: string;
     foto?: string;
     genero: 'masculino' | 'femenino' | 'no_declara';
+    fechaNacimiento: string;
+    cantidadHijos: number;
+    activo: boolean;
+    fechaBaja?: string;
+    motivoBaja?: 'renuncia' | 'despido' | 'finalizacion_de_contrato';
     domicilio: Domicilio;
     categoria?: string;
     subCategoria?: string;

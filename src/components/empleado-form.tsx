@@ -13,6 +13,7 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { 
   Select, 
@@ -42,6 +43,11 @@ const empleadoSchema = z.object({
   genero: z.enum(["masculino", "femenino", "no_declara"], {
     required_error: "El género es requerido",
   }),
+  fechaNacimiento: z.string().min(1, { message: "La fecha de nacimiento es requerida" }),
+  cantidadHijos: z.number().default(0),
+  activo: z.boolean().default(true),
+  fechaBaja: z.string().optional(),
+  motivoBaja: z.enum(["renuncia", "despido", "finalizacion_de_contrato"]).optional(),
   domicilio: z.object({
     calle: z.string().min(1, { message: "La calle es requerida" }),
     numero: z.string().min(1, { message: "El número es requerido" }),
@@ -95,6 +101,11 @@ export function EmpleadoForm({ empleadoToEdit, onSuccess }: EmpleadoFormProps) {
       subCategoria: "",
       fechaIngreso: "",
       empresaId: "",
+      fechaNacimiento: "",
+      cantidadHijos: 0,
+      activo: true,
+      fechaBaja: "",
+      motivoBaja: undefined,
     },
   })
 
@@ -301,6 +312,41 @@ export function EmpleadoForm({ empleadoToEdit, onSuccess }: EmpleadoFormProps) {
                   </FormItem>
                 )}
               />
+              {/* Row 5: Fecha de nacimiento - Cantidad de hijos */}
+              <FormField
+                control={form.control}
+                name="fechaNacimiento"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                      Fecha de Nacimiento
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="cantidadHijos"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cantidad de Hijos</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="0" 
+                        {...field} 
+                        onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                        value={field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
 
@@ -375,6 +421,9 @@ export function EmpleadoForm({ empleadoToEdit, onSuccess }: EmpleadoFormProps) {
                   </FormItem>
                 )}
               />
+
+              {/* Row 5: Fecha de Nacimiento - Cantidad de Hijos */}
+              
             </div>
           </div>
 
@@ -488,6 +537,67 @@ export function EmpleadoForm({ empleadoToEdit, onSuccess }: EmpleadoFormProps) {
             </div>
           </div>
 
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Estado del Empleado</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="activo"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Empleado Activo</FormLabel>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {!form.watch("activo") && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="fechaBaja"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha de Baja</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="motivoBaja"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Motivo de Baja</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccione un motivo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="renuncia">Renuncia</SelectItem>
+                        <SelectItem value="despido">Despido</SelectItem>
+                        <SelectItem value="finalizacion_de_contrato">Finalización de Contrato</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end space-x-4">
